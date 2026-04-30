@@ -1,0 +1,34 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+
+  /* NOU / HEVACRAZ palette — adjust when official assets arrive. */
+  --color-brand-50: #ecfdf5;
+  --color-brand-100: #d1fae5;
+  --color-brand-200: #a7f3d0;
+  --color-brand-500: #10b981;
+  --color-brand-600: #0d4f3c;
+  --color-brand-700: #064e3b;
+  --color-brand-900: #022c22;
+}
+
+/* Prevent iOS zoom on input focus by enforcing a 16px minimum. */
+input,
+select,
+textarea,
+button {
+  font-size: 16px;
+}
+
+/* High-contrast tap-state outline for outdoor readability. */
+:focus-visible {
+  outline: 2px solid var(--color-brand-600);
+  outline-offset: 2px;
+}
+
+/* Leaflet zooming uses transforms — keep tile rendering crisp on mobile. */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+}
