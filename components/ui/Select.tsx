@@ -9,11 +9,10 @@ type SelectProps = SelectHTMLAttributes<HTMLSelectElement> & {
 };
 
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
-  function Select({ invalid, className, children, placeholder, value, ...rest }, ref) {
+  function Select({ invalid, className, children, placeholder, ...rest }, ref) {
     return (
       <select
         ref={ref}
-        value={value ?? ""}
         className={cn(
           "block w-full min-h-[44px] rounded-lg border bg-white px-3 py-2",
           "text-slate-900",
