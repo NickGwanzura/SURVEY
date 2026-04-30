@@ -26,7 +26,6 @@ export type MapMarker = {
   firstName: string;
   surname: string;
   province: Province;
-  district: string;
   mainWorkFocus: MainWorkFocus[];
   hasCertification: HasCertification;
   status: SubmissionStatus;
@@ -117,7 +116,7 @@ function MarkersLayer({ markers }: { markers: MapMarker[] }) {
         const popupHtml = `
           <div style="min-width:180px;font-family:sans-serif;font-size:13px;line-height:1.5">
             <p style="font-weight:600;margin:0 0 4px">${m.firstName} ${m.surname}</p>
-            <p style="margin:0;color:#555">${m.district}, ${PROVINCE_LABELS[m.province]}</p>
+            <p style="margin:0;color:#555">${PROVINCE_LABELS[m.province]}</p>
             <p style="margin:2px 0;color:#555">${focusLabel}</p>
             <p style="margin:2px 0;color:#555">Experience: ${yearsLabel}</p>
             <span style="

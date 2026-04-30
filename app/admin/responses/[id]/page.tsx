@@ -159,7 +159,6 @@ export default async function ResponseDetailPage({ params }: PageProps) {
               <DetailRow label="Province">
                 {PROVINCE_LABELS[survey.province as Province]}
               </DetailRow>
-              <DetailRow label="District">{survey.district}</DetailRow>
               <DetailRow label="City / town">{survey.city}</DetailRow>
               <DetailRow label="Suburb / area">{survey.suburb}</DetailRow>
               <DetailRow label="Phone (full)">{survey.phone}</DetailRow>

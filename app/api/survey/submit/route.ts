@@ -65,7 +65,6 @@ export async function POST(req: NextRequest) {
       mainWorkFocus: data.mainWorkFocus,
       mainWorkFocusOther: data.mainWorkFocusOther,
       province: data.province,
-      district: data.district,
       city: data.city,
       suburb: data.suburb,
       gpsLatitude: data.gpsLatitude?.toString() ?? null,

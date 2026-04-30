@@ -45,7 +45,6 @@ export const ALL_COLUMNS: ColDef[] = [
   { header: "Main work focus", key: "mainWorkFocus", section: "background" },
   { header: "Main work focus (other)", key: "mainWorkFocusOther", section: "background" },
   { header: "Province", key: "province", section: "background" },
-  { header: "District", key: "district", section: "background" },
   { header: "City", key: "city", section: "background" },
   { header: "Suburb", key: "suburb", section: "background" },
   { header: "GPS latitude", key: "gpsLatitude", section: "background" },

@@ -138,7 +138,6 @@ export const techniciansSurvey = pgTable(
     mainWorkFocusOther: text("main_work_focus_other"),
 
     province: provinceEnum("province").notNull(),
-    district: text("district").notNull(),
     city: text("city").notNull(),
     suburb: text("suburb").notNull(),
     gpsLatitude: numeric("gps_latitude", { precision: 10, scale: 7 }),

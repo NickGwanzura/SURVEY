@@ -117,7 +117,6 @@ export function ResponsesTable({ rows, total, page, pageSize }: Props) {
                 <th className="px-4 py-3">Name</th>
                 <th className="px-4 py-3">Phone</th>
                 <th className="px-4 py-3">Province</th>
-                <th className="px-4 py-3">District</th>
                 <th className="px-4 py-3">Work focus</th>
                 <th className="px-4 py-3">Experience</th>
                 <th className="px-4 py-3">Cert.</th>
@@ -157,7 +156,6 @@ export function ResponsesTable({ rows, total, page, pageSize }: Props) {
                     <td className="px-4 py-3 text-slate-700">
                       {PROVINCE_LABELS[row.province as Province] ?? row.province}
                     </td>
-                    <td className="px-4 py-3 text-slate-700">{row.district}</td>
                     <td className="px-4 py-3 text-slate-700 max-w-[160px] truncate">
                       {(() => {
                         const focus = row.mainWorkFocus ?? [];

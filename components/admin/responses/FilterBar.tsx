@@ -8,7 +8,6 @@ import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
 import {
   PROVINCE_LABELS,
-  DISTRICTS_BY_PROVINCE,
   PROVINCES,
   MAIN_WORK_FOCUS_LABELS,
   MAIN_WORK_FOCUS,
@@ -21,7 +20,6 @@ import {
   HAS_CERTIFICATION_LABELS,
   HAS_CERTIFICATION_OPTIONS,
 } from "@/lib/constants/refrigerants";
-import type { Province } from "@/lib/constants/provinces";
 
 const STATUS_OPTIONS = [
   { value: "pending", label: "Pending" },
@@ -38,7 +36,6 @@ export function FilterBar() {
   // Local state mirrors searchParams so we can update URL on change
   const [q, setQ] = useState(searchParams.get("q") ?? "");
   const [province, setProvince] = useState(searchParams.get("province") ?? "");
-  const [district, setDistrict] = useState(searchParams.get("district") ?? "");
   const [mainWorkFocus, setMainWorkFocus] = useState(searchParams.get("mainWorkFocus") ?? "");
   const [hasCertification, setHasCertification] = useState(searchParams.get("hasCertification") ?? "");
   const [status, setStatus] = useState(searchParams.get("status") ?? "");
@@ -59,7 +56,6 @@ export function FilterBar() {
       const all = {
         q,
         province,
-        district,
         mainWorkFocus,
         hasCertification,
         status,
@@ -84,7 +80,7 @@ export function FilterBar() {
       router,
       pathname,
       searchParams,
-      q, province, district, mainWorkFocus, hasCertification,
+      q, province, mainWorkFocus, hasCertification,
       status, yearsExperience, educationLevel, dateFrom, dateTo,
     ],
   );
@@ -110,7 +106,6 @@ export function FilterBar() {
   const handleReset = () => {
     setQ("");
     setProvince("");
-    setDistrict("");
     setMainWorkFocus("");
     setHasCertification("");
     setStatus("");
@@ -120,11 +115,6 @@ export function FilterBar() {
     setDateTo("");
     router.replace(pathname);
   };
-
-  const districtOptions =
-    province && DISTRICTS_BY_PROVINCE[province as Province]
-      ? DISTRICTS_BY_PROVINCE[province as Province]
-      : [];
 
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -173,10 +163,8 @@ export function FilterBar() {
             id="filter-province"
             value={province}
             onChange={(e) => {
-              const val = e.target.value;
-              setProvince(val);
-              setDistrict(""); // reset district when province changes
-              pushParams({ province: val, district: "" });
+              setProvince(e.target.value);
+              pushParams({ province: e.target.value });
             }}
           >
             <option value="">All provinces</option>
@@ -187,30 +175,6 @@ export function FilterBar() {
             ))}
           </Select>
         </div>
-
-        {/* District — only shown when a province is selected */}
-        {province ? (
-          <div>
-            <label htmlFor="filter-district" className="sr-only">
-              District
-            </label>
-            <Select
-              id="filter-district"
-              value={district}
-              onChange={(e) => {
-                setDistrict(e.target.value);
-                pushParams({ district: e.target.value });
-              }}
-            >
-              <option value="">All districts</option>
-              {districtOptions.map((d) => (
-                <option key={d} value={d}>
-                  {d}
-                </option>
-              ))}
-            </Select>
-          </div>
-        ) : null}
 
         {/* Main work focus */}
         <div>

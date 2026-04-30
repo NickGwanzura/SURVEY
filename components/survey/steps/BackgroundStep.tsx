@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { Controller, useForm } from "react-hook-form";
 
 import { ConditionalField } from "@/components/survey/ConditionalField";
@@ -22,11 +22,7 @@ import {
   EDUCATION_LEVELS,
   EDUCATION_LEVEL_LABELS,
 } from "@/lib/constants/educationLevels";
-import {
-  DISTRICTS_BY_PROVINCE,
-  PROVINCES,
-  PROVINCE_LABELS,
-} from "@/lib/constants/provinces";
+import { PROVINCES, PROVINCE_LABELS } from "@/lib/constants/provinces";
 import {
   MAIN_WORK_FOCUS,
   MAIN_WORK_FOCUS_LABELS,
@@ -57,11 +53,6 @@ export function BackgroundStep({
     mode: "onTouched",
   });
 
-  const province = form.watch("province");
-  const districts = useMemo(
-    () => (province ? DISTRICTS_BY_PROVINCE[province] : []),
-    [province],
-  );
   const mainFocusRaw = form.watch("mainWorkFocus");
   const mainFocus: string[] = Array.isArray(mainFocusRaw)
     ? mainFocusRaw
@@ -301,49 +292,25 @@ export function BackgroundStep({
           </Field>
         </ConditionalField>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field
-            label="Province"
-            required
-            htmlFor="province"
-            error={form.formState.errors.province?.message}
+        <Field
+          label="Province"
+          required
+          htmlFor="province"
+          error={form.formState.errors.province?.message}
+        >
+          <Select
+            id="province"
+            placeholder="Choose…"
+            invalid={Boolean(form.formState.errors.province)}
+            {...form.register("province")}
           >
-            <Select
-              id="province"
-              placeholder="Choose…"
-              invalid={Boolean(form.formState.errors.province)}
-              {...form.register("province", {
-                onChange: () => form.setValue("district", ""),
-              })}
-            >
-              {PROVINCES.map((p) => (
-                <option key={p} value={p}>
-                  {PROVINCE_LABELS[p]}
-                </option>
-              ))}
-            </Select>
-          </Field>
-          <Field
-            label="District"
-            required
-            htmlFor="district"
-            error={form.formState.errors.district?.message}
-          >
-            <Select
-              id="district"
-              placeholder={province ? "Choose…" : "Choose province first"}
-              disabled={!province}
-              invalid={Boolean(form.formState.errors.district)}
-              {...form.register("district")}
-            >
-              {districts.map((d) => (
-                <option key={d} value={d}>
-                  {d}
-                </option>
-              ))}
-            </Select>
-          </Field>
-        </div>
+            {PROVINCES.map((p) => (
+              <option key={p} value={p}>
+                {PROVINCE_LABELS[p]}
+              </option>
+            ))}
+          </Select>
+        </Field>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field

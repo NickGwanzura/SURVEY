@@ -19,7 +19,6 @@ import { adminUsers, auditLog, techniciansSurvey } from "@/lib/schema";
 export const listResponsesParamsSchema = z.object({
   q: z.string().trim().max(200).optional(),
   province: z.enum(PROVINCES).optional(),
-  district: z.string().trim().max(100).optional(),
   mainWorkFocus: z.enum(MAIN_WORK_FOCUS).optional(),
   hasCertification: z.enum(HAS_CERTIFICATION_OPTIONS).optional(),
   status: z.enum(SUBMISSION_STATUSES).optional(),
@@ -39,7 +38,6 @@ export type ResponseRow = {
   surname: string;
   phone: string;
   province: string;
-  district: string;
   mainWorkFocus: string[];
   yearsExperience: string;
   hasCertification: string;
@@ -61,7 +59,7 @@ export type ListResponsesResult = {
 export async function listResponses(
   params: ListResponsesParams,
 ): Promise<ListResponsesResult> {
-  const { q, province, district, mainWorkFocus, hasCertification, status, yearsExperience, educationLevel, dateFrom, dateTo, page, pageSize } = params;
+  const { q, province, mainWorkFocus, hasCertification, status, yearsExperience, educationLevel, dateFrom, dateTo, page, pageSize } = params;
 
   const conditions: (SQL | undefined)[] = [];
 
@@ -76,7 +74,6 @@ export async function listResponses(
     );
   }
   if (province) conditions.push(eq(techniciansSurvey.province, province));
-  if (district) conditions.push(ilike(techniciansSurvey.district, `%${district}%`));
   if (mainWorkFocus) {
     conditions.push(
       sql`${techniciansSurvey.mainWorkFocus} @> ${JSON.stringify([mainWorkFocus])}::jsonb`,
@@ -105,7 +102,6 @@ export async function listResponses(
         surname: techniciansSurvey.surname,
         phone: techniciansSurvey.phone,
         province: techniciansSurvey.province,
-        district: techniciansSurvey.district,
         mainWorkFocus: techniciansSurvey.mainWorkFocus,
         yearsExperience: techniciansSurvey.yearsExperience,
         hasCertification: techniciansSurvey.hasCertification,

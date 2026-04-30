@@ -53,12 +53,12 @@ export function GpsCapture({ value, onChange }: GpsCaptureProps) {
         if (err.code === err.PERMISSION_DENIED) {
           setStatus("denied");
           setErrorMsg(
-            "Location permission denied. Your district and city information will still help us locate you.",
+            "Location permission denied. Your city and suburb information will still help us locate you.",
           );
         } else {
           setStatus("unavailable");
           setErrorMsg(
-            "We could not get your GPS location. Your district and city information will still help us locate you.",
+            "We could not get your GPS location. Your city and suburb information will still help us locate you.",
           );
         }
       },

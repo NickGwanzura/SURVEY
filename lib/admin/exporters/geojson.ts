@@ -40,7 +40,6 @@ export async function geojsonExporter(
     const properties: Record<string, GeoJsonPropertyValue> = {
       id,
       province: row.province,
-      district: row.district,
       mainWorkFocus: row.mainWorkFocus ?? [],
       hasCertification: row.hasCertification,
       status: row.status,

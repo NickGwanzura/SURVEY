@@ -25,7 +25,6 @@ const exportRequestSchema = z.object({
   filters: z
     .object({
       province: z.enum(PROVINCES).optional(),
-      district: z.string().trim().max(100).optional(),
       mainWorkFocus: z.enum(MAIN_WORK_FOCUS).optional(),
       status: z.enum(SUBMISSION_STATUSES).optional(),
       hasCertification: z.enum(HAS_CERTIFICATION_OPTIONS).optional(),
@@ -96,7 +95,6 @@ export async function POST(request: NextRequest) {
     );
   }
   if (filters.province) conditions.push(eq(techniciansSurvey.province, filters.province));
-  if (filters.district) conditions.push(ilike(techniciansSurvey.district, `%${filters.district}%`) as ReturnType<typeof eq>);
   if (filters.mainWorkFocus) {
     conditions.push(
       sql`${techniciansSurvey.mainWorkFocus} @> ${JSON.stringify([filters.mainWorkFocus])}::jsonb` as ReturnType<typeof eq>,

@@ -16,7 +16,6 @@ const PDF_SECTION_COLUMNS: Record<string, { header: string; key: keyof Technicia
   background: [
     { header: "Name / ID", key: "id" }, // overridden below
     { header: "Province", key: "province" },
-    { header: "District", key: "district" },
     { header: "Gender", key: "gender" },
     { header: "Age group", key: "ageGroup" },
     { header: "Education", key: "educationLevel" },

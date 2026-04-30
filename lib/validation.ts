@@ -80,7 +80,6 @@ export const backgroundStepSchema = z
     province: z.enum(PROVINCES, {
       errorMap: () => ({ message: "Please choose a province." }),
     }),
-    district: z.string().trim().min(2, "District is required.").max(100),
     city: z.string().trim().min(2, "City or town is required.").max(100),
     suburb: z.string().trim().min(2, "Suburb or area is required.").max(100),
     gpsLatitude: z
@@ -309,7 +308,6 @@ export const surveySubmissionSchema = z
     mainWorkFocus: z.array(z.enum(MAIN_WORK_FOCUS)).min(1),
     mainWorkFocusOther: optionalShortString,
     province: z.enum(PROVINCES),
-    district: z.string().trim().min(2).max(100),
     city: z.string().trim().min(2).max(100),
     suburb: z.string().trim().min(2).max(100),
     gpsLatitude: z.number().min(-90).max(90).nullable().optional(),

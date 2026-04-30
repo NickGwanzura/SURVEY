@@ -144,7 +144,6 @@ const SPSS_COLUMNS: SpssCol[] = [
     getValue: (row, anon) => (anon ? "__HASH__" + row.id : row.id),
   },
   { name: "province", label: "Province (1=Byo,2=Hre,...,10=Mids)", getValue: (r) => PROVINCE_CODES[r.province] ?? 99 },
-  { name: "district", label: "District", getValue: (r) => r.district },
   { name: "gender", label: "Gender (1=M,2=F,99=NR)", getValue: (r) => GENDER_CODES[r.gender] ?? 99 },
   { name: "age_grp", label: "Age group (1=<25...6=65+)", getValue: (r) => AGE_GROUP_CODES[r.ageGroup] ?? 99 },
   { name: "edu_lvl", label: "Education level (1-8)", getValue: (r) => EDUCATION_CODES[r.educationLevel] ?? 99 },
