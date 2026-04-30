@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, count, desc, eq, gte, ilike, lte, or, type SQL } from "drizzle-orm";
+import { and, count, desc, eq, gte, ilike, lte, or, sql, type SQL } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "@/lib/db";
@@ -40,7 +40,7 @@ export type ResponseRow = {
   phone: string;
   province: string;
   district: string;
-  mainWorkFocus: string;
+  mainWorkFocus: string[];
   yearsExperience: string;
   hasCertification: string;
   status: string;
@@ -77,7 +77,11 @@ export async function listResponses(
   }
   if (province) conditions.push(eq(techniciansSurvey.province, province));
   if (district) conditions.push(ilike(techniciansSurvey.district, `%${district}%`));
-  if (mainWorkFocus) conditions.push(eq(techniciansSurvey.mainWorkFocus, mainWorkFocus));
+  if (mainWorkFocus) {
+    conditions.push(
+      sql`${techniciansSurvey.mainWorkFocus} @> ${JSON.stringify([mainWorkFocus])}::jsonb`,
+    );
+  }
   if (hasCertification) conditions.push(eq(techniciansSurvey.hasCertification, hasCertification));
   if (status) conditions.push(eq(techniciansSurvey.status, status));
   if (yearsExperience) conditions.push(eq(techniciansSurvey.yearsExperience, yearsExperience));

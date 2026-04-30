@@ -27,7 +27,7 @@ export type MapMarker = {
   surname: string;
   province: Province;
   district: string;
-  mainWorkFocus: MainWorkFocus;
+  mainWorkFocus: MainWorkFocus[];
   hasCertification: HasCertification;
   status: SubmissionStatus;
   yearsExperience: YearsExperience;
@@ -105,7 +105,12 @@ function MarkersLayer({ markers }: { markers: MapMarker[] }) {
       {markers.map((m) => {
         const icon = makeIcon(m.status);
         const certLabel = HAS_CERTIFICATION_LABELS[m.hasCertification];
-        const focusLabel = MAIN_WORK_FOCUS_LABELS[m.mainWorkFocus];
+        const focusLabel =
+          m.mainWorkFocus.length === 0
+            ? "—"
+            : m.mainWorkFocus
+                .map((f) => MAIN_WORK_FOCUS_LABELS[f] ?? f)
+                .join(", ");
         const yearsLabel = YEARS_EXPERIENCE_LABELS[m.yearsExperience];
         const statusColor = STATUS_COLORS[m.status];
 
@@ -181,7 +186,11 @@ export function TechniciansMap({ markers }: TechniciansMapProps) {
   const filtered = useMemo(() => {
     return markers.filter((m) => {
       if (filters.province && m.province !== filters.province) return false;
-      if (filters.mainWorkFocus && m.mainWorkFocus !== filters.mainWorkFocus) return false;
+      if (
+        filters.mainWorkFocus &&
+        !m.mainWorkFocus.includes(filters.mainWorkFocus as MainWorkFocus)
+      )
+        return false;
       if (filters.hasCertification && m.hasCertification !== filters.hasCertification) return false;
       if (filters.yearsExperience && m.yearsExperience !== filters.yearsExperience) return false;
       if (filters.status && m.status !== filters.status) return false;

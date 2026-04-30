@@ -149,7 +149,14 @@ const SPSS_COLUMNS: SpssCol[] = [
   { name: "age_grp", label: "Age group (1=<25...6=65+)", getValue: (r) => AGE_GROUP_CODES[r.ageGroup] ?? 99 },
   { name: "edu_lvl", label: "Education level (1-8)", getValue: (r) => EDUCATION_CODES[r.educationLevel] ?? 99 },
   { name: "yrs_exp", label: "Years experience (1=<1...7=>20)", getValue: (r) => YEARS_EXP_CODES[r.yearsExperience] ?? 99 },
-  { name: "wk_focus", label: "Work focus (1-8,99=other)", getValue: (r) => WORK_FOCUS_CODES[r.mainWorkFocus] ?? 99 },
+  {
+    name: "wk_focus",
+    label: "Work focus codes (pipe-separated; 1-8,99=other)",
+    getValue: (r) => {
+      const focuses = r.mainWorkFocus ?? [];
+      return focuses.map((f) => WORK_FOCUS_CODES[f] ?? 99).join("|");
+    },
+  },
   { name: "has_cert", label: "Has certification (1=yes,2=no,3=studying)", getValue: (r) => CERTIFICATION_CODES[r.hasCertification] ?? 99 },
   { name: "gps_lat", label: "GPS latitude", getValue: (r) => r.gpsLatitude != null ? String(r.gpsLatitude) : "" },
   { name: "gps_lng", label: "GPS longitude", getValue: (r) => r.gpsLongitude != null ? String(r.gpsLongitude) : "" },

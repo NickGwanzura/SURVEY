@@ -62,7 +62,12 @@ export function BackgroundStep({
     () => (province ? DISTRICTS_BY_PROVINCE[province] : []),
     [province],
   );
-  const mainFocus = form.watch("mainWorkFocus");
+  const mainFocusRaw = form.watch("mainWorkFocus");
+  const mainFocus: string[] = Array.isArray(mainFocusRaw)
+    ? mainFocusRaw
+    : typeof mainFocusRaw === "string" && mainFocusRaw
+      ? [mainFocusRaw]
+      : [];
   const phone = form.watch("phone");
 
   const duplicateState = useRef<DuplicateState>("idle");
@@ -227,24 +232,61 @@ export function BackgroundStep({
         <Field
           label="Main Work Focus"
           required
-          htmlFor="mainWorkFocus"
+          hint="Select all that apply."
           error={form.formState.errors.mainWorkFocus?.message}
         >
-          <Select
-            id="mainWorkFocus"
-            placeholder="Choose…"
-            invalid={Boolean(form.formState.errors.mainWorkFocus)}
-            {...form.register("mainWorkFocus")}
-          >
-            {MAIN_WORK_FOCUS.map((m) => (
-              <option key={m} value={m}>
-                {MAIN_WORK_FOCUS_LABELS[m]}
-              </option>
-            ))}
-          </Select>
+          <Controller
+            control={form.control}
+            name="mainWorkFocus"
+            render={({ field }) => {
+              const raw = field.value;
+              const selected: (typeof MAIN_WORK_FOCUS)[number][] = Array.isArray(
+                raw,
+              )
+                ? raw
+                : typeof raw === "string" && raw
+                  ? [raw as (typeof MAIN_WORK_FOCUS)[number]]
+                  : [];
+              const toggle = (val: (typeof MAIN_WORK_FOCUS)[number]) => {
+                const next = selected.includes(val)
+                  ? selected.filter((v) => v !== val)
+                  : [...selected, val];
+                field.onChange(next);
+              };
+              return (
+                <div
+                  role="group"
+                  className="grid grid-cols-1 gap-2 sm:grid-cols-2"
+                >
+                  {MAIN_WORK_FOCUS.map((m) => {
+                    const checked = selected.includes(m);
+                    return (
+                      <label
+                        key={m}
+                        className={`flex cursor-pointer items-start gap-2 rounded-lg border p-3 text-sm transition-colors ${
+                          checked
+                            ? "border-brand-600 bg-brand-50 text-slate-900"
+                            : "border-slate-300 text-slate-700 hover:bg-slate-50"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() => toggle(m)}
+                          onBlur={field.onBlur}
+                          className="mt-0.5 accent-brand-600"
+                        />
+                        <span>{MAIN_WORK_FOCUS_LABELS[m]}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              );
+            }}
+          />
         </Field>
 
-        <ConditionalField show={mainFocus === "other"}>
+        <ConditionalField show={mainFocus.includes("other")}>
           <Field
             label="Please describe your main work focus"
             required

@@ -27,7 +27,7 @@ import {
 import { EDUCATION_LEVELS } from "./constants/educationLevels";
 import { PROVINCES } from "./constants/provinces";
 import { HAS_CERTIFICATION_OPTIONS } from "./constants/refrigerants";
-import { MAIN_WORK_FOCUS } from "./constants/workFocus";
+import type { MainWorkFocus } from "./constants/workFocus";
 
 export const genderEnum = pgEnum("gender", GENDERS);
 export const ageGroupEnum = pgEnum("age_group", AGE_GROUPS);
@@ -36,7 +36,6 @@ export const yearsExperienceEnum = pgEnum(
   "years_experience",
   YEARS_EXPERIENCE,
 );
-export const mainWorkFocusEnum = pgEnum("main_work_focus", MAIN_WORK_FOCUS);
 export const provinceEnum = pgEnum("province", PROVINCES);
 export const hasCertificationEnum = pgEnum(
   "has_certification",
@@ -133,7 +132,9 @@ export const techniciansSurvey = pgTable(
     ageGroup: ageGroupEnum("age_group").notNull(),
     educationLevel: educationLevelEnum("education_level").notNull(),
     yearsExperience: yearsExperienceEnum("years_experience").notNull(),
-    mainWorkFocus: mainWorkFocusEnum("main_work_focus").notNull(),
+    mainWorkFocus: jsonb("main_work_focus")
+      .$type<MainWorkFocus[]>()
+      .notNull(),
     mainWorkFocusOther: text("main_work_focus_other"),
 
     province: provinceEnum("province").notNull(),
@@ -237,9 +238,8 @@ export const techniciansSurvey = pgTable(
     phoneIdx: index("technicians_survey_phone_idx").on(table.phone),
     emailIdx: index("technicians_survey_email_idx").on(table.email),
     provinceIdx: index("technicians_survey_province_idx").on(table.province),
-    mainWorkFocusIdx: index("technicians_survey_main_work_focus_idx").on(
-      table.mainWorkFocus,
-    ),
+    mainWorkFocusIdx: index("technicians_survey_main_work_focus_idx")
+      .using("gin", table.mainWorkFocus),
     submittedAtIdx: index("technicians_survey_submitted_at_idx").on(
       table.submittedAt,
     ),

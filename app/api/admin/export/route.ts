@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { and, eq, gte, ilike, lte, or } from "drizzle-orm";
+import { and, eq, gte, ilike, lte, or, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { getCurrentAdmin } from "@/lib/auth-server";
@@ -97,7 +97,11 @@ export async function POST(request: NextRequest) {
   }
   if (filters.province) conditions.push(eq(techniciansSurvey.province, filters.province));
   if (filters.district) conditions.push(ilike(techniciansSurvey.district, `%${filters.district}%`) as ReturnType<typeof eq>);
-  if (filters.mainWorkFocus) conditions.push(eq(techniciansSurvey.mainWorkFocus, filters.mainWorkFocus));
+  if (filters.mainWorkFocus) {
+    conditions.push(
+      sql`${techniciansSurvey.mainWorkFocus} @> ${JSON.stringify([filters.mainWorkFocus])}::jsonb` as ReturnType<typeof eq>,
+    );
+  }
   if (filters.hasCertification) conditions.push(eq(techniciansSurvey.hasCertification, filters.hasCertification));
   if (filters.status) conditions.push(eq(techniciansSurvey.status, filters.status));
   if (filters.yearsExperience) conditions.push(eq(techniciansSurvey.yearsExperience, filters.yearsExperience));

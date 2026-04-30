@@ -38,7 +38,7 @@ export default async function MapPage() {
       surname: r.surname,
       province: r.province,
       district: r.district,
-      mainWorkFocus: r.mainWorkFocus,
+      mainWorkFocus: r.mainWorkFocus ?? [],
       hasCertification: r.hasCertification,
       status: r.status,
       yearsExperience: r.yearsExperience,

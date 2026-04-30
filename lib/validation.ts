@@ -73,9 +73,9 @@ export const backgroundStepSchema = z
     yearsExperience: z.enum(YEARS_EXPERIENCE, {
       errorMap: () => ({ message: "Please choose how long you have worked." }),
     }),
-    mainWorkFocus: z.enum(MAIN_WORK_FOCUS, {
-      errorMap: () => ({ message: "Please choose your main work focus." }),
-    }),
+    mainWorkFocus: z
+      .array(z.enum(MAIN_WORK_FOCUS))
+      .min(1, "Please choose at least one work focus."),
     mainWorkFocusOther: optionalShortString,
     province: z.enum(PROVINCES, {
       errorMap: () => ({ message: "Please choose a province." }),
@@ -109,7 +109,7 @@ export const backgroundStepSchema = z
       .transform((v) => (v ? v : undefined)),
   })
   .superRefine((data, ctx) => {
-    if (data.mainWorkFocus === "other" && !data.mainWorkFocusOther) {
+    if (data.mainWorkFocus.includes("other") && !data.mainWorkFocusOther) {
       ctx.addIssue({
         code: "custom",
         path: ["mainWorkFocusOther"],
@@ -306,7 +306,7 @@ export const surveySubmissionSchema = z
     ageGroup: z.enum(AGE_GROUPS),
     educationLevel: z.enum(EDUCATION_LEVELS),
     yearsExperience: z.enum(YEARS_EXPERIENCE),
-    mainWorkFocus: z.enum(MAIN_WORK_FOCUS),
+    mainWorkFocus: z.array(z.enum(MAIN_WORK_FOCUS)).min(1),
     mainWorkFocusOther: optionalShortString,
     province: z.enum(PROVINCES),
     district: z.string().trim().min(2).max(100),
@@ -374,7 +374,7 @@ export const surveySubmissionSchema = z
       .default("web"),
   })
   .superRefine((data, ctx) => {
-    if (data.mainWorkFocus === "other" && !data.mainWorkFocusOther) {
+    if (data.mainWorkFocus.includes("other") && !data.mainWorkFocusOther) {
       ctx.addIssue({
         code: "custom",
         path: ["mainWorkFocusOther"],

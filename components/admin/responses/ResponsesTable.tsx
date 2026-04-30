@@ -159,7 +159,16 @@ export function ResponsesTable({ rows, total, page, pageSize }: Props) {
                     </td>
                     <td className="px-4 py-3 text-slate-700">{row.district}</td>
                     <td className="px-4 py-3 text-slate-700 max-w-[160px] truncate">
-                      {MAIN_WORK_FOCUS_LABELS[row.mainWorkFocus as MainWorkFocus] ?? row.mainWorkFocus}
+                      {(() => {
+                        const focus = row.mainWorkFocus ?? [];
+                        if (focus.length === 0) return "—";
+                        return focus
+                          .map(
+                            (f) =>
+                              MAIN_WORK_FOCUS_LABELS[f as MainWorkFocus] ?? f,
+                          )
+                          .join(", ");
+                      })()}
                     </td>
                     <td className="px-4 py-3 text-slate-700">
                       {YEARS_EXPERIENCE_LABELS[row.yearsExperience as YearsExperience] ?? row.yearsExperience}

@@ -36,7 +36,6 @@ import type { Province } from "@/lib/constants/provinces";
 import type { Gender } from "@/lib/constants/ageGroups";
 import type { AgeGroup, YearsExperience } from "@/lib/constants/ageGroups";
 import type { EducationLevel } from "@/lib/constants/educationLevels";
-import type { MainWorkFocus } from "@/lib/constants/workFocus";
 import type {
   BiggestDailyChallenge,
   EnergyEfficientInstall,
@@ -145,10 +144,17 @@ export default async function ResponseDetailPage({ params }: PageProps) {
                 {YEARS_EXPERIENCE_LABELS[survey.yearsExperience as YearsExperience]}
               </DetailRow>
               <DetailRow label="Main work focus">
-                {MAIN_WORK_FOCUS_LABELS[survey.mainWorkFocus as MainWorkFocus]}
-                {survey.mainWorkFocusOther ? (
-                  <span className="ml-1 text-slate-500">({survey.mainWorkFocusOther})</span>
-                ) : null}
+                <div className="flex flex-col gap-1.5">
+                  <ChipList
+                    items={survey.mainWorkFocus ?? []}
+                    labels={MAIN_WORK_FOCUS_LABELS as Record<string, string>}
+                  />
+                  {survey.mainWorkFocusOther ? (
+                    <span className="text-xs text-slate-500">
+                      Other: {survey.mainWorkFocusOther}
+                    </span>
+                  ) : null}
+                </div>
               </DetailRow>
               <DetailRow label="Province">
                 {PROVINCE_LABELS[survey.province as Province]}

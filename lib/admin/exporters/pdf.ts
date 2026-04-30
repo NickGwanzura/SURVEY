@@ -54,7 +54,10 @@ function labelValue(row: TechnicianSurvey, key: keyof TechnicianSurvey): string 
   const val = row[key];
   if (val === null || val === undefined) return "";
   if (key === "province") return PROVINCE_LABELS[val as Province] ?? String(val);
-  if (key === "mainWorkFocus") return MAIN_WORK_FOCUS_LABELS[val as MainWorkFocus] ?? String(val);
+  if (key === "mainWorkFocus") {
+    const arr = (val as MainWorkFocus[]) ?? [];
+    return arr.map((f) => MAIN_WORK_FOCUS_LABELS[f] ?? f).join(", ");
+  }
   if (key === "hasCertification") return HAS_CERTIFICATION_LABELS[val as HasCertification] ?? String(val);
   if (key === "submittedAt") {
     const d = val instanceof Date ? val : new Date(String(val));

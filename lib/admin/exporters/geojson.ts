@@ -1,13 +1,20 @@
 import type { TechnicianSurvey } from "@/lib/schema";
 import { stableHash, type ExportOptions, type ExportResult } from "./types";
 
+type GeoJsonPropertyValue =
+  | string
+  | number
+  | boolean
+  | null
+  | string[];
+
 type GeoJsonFeature = {
   type: "Feature";
   geometry: {
     type: "Point";
     coordinates: [number, number];
   };
-  properties: Record<string, string | number | boolean | null>;
+  properties: Record<string, GeoJsonPropertyValue>;
 };
 
 type GeoJsonFeatureCollection = {
@@ -30,11 +37,11 @@ export async function geojsonExporter(
 
     const id = opts.anonymise ? await stableHash(row.id) : row.id;
 
-    const properties: Record<string, string | number | boolean | null> = {
+    const properties: Record<string, GeoJsonPropertyValue> = {
       id,
       province: row.province,
       district: row.district,
-      mainWorkFocus: row.mainWorkFocus,
+      mainWorkFocus: row.mainWorkFocus ?? [],
       hasCertification: row.hasCertification,
       status: row.status,
       yearsExperience: row.yearsExperience,

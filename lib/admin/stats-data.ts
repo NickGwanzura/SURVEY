@@ -20,6 +20,8 @@ export type StatsData = {
     flagged: number;
   };
   byProvince: Array<{ province: Province; label: string; count: number }>;
+  // byWorkFocus counts how many technicians selected each focus. Since a
+  // technician may pick more than one, the sum can exceed total respondents.
   byWorkFocus: Array<{ value: MainWorkFocus; label: string; count: number }>;
   byCertification: Array<{
     value: HasCertification;
@@ -32,7 +34,7 @@ export type StatsData = {
     firstName: string;
     surname: string;
     province: Province;
-    mainWorkFocus: MainWorkFocus;
+    mainWorkFocus: MainWorkFocus[];
     status: SubmissionStatus;
     submittedAt: Date;
   }>;
@@ -58,7 +60,7 @@ export async function getStatsData(): Promise<StatsData> {
     pendingRows,
     flaggedRows,
     byProvinceRows,
-    byWorkFocusRows,
+    workFocusSelectionRows,
     byCertRows,
     recentRows,
     submissionDayRows,
@@ -90,10 +92,8 @@ export async function getStatsData(): Promise<StatsData> {
       .groupBy(techniciansSurvey.province)
       .orderBy(desc(count())),
     db
-      .select({ value: techniciansSurvey.mainWorkFocus, count: count() })
-      .from(techniciansSurvey)
-      .groupBy(techniciansSurvey.mainWorkFocus)
-      .orderBy(desc(count())),
+      .select({ mainWorkFocus: techniciansSurvey.mainWorkFocus })
+      .from(techniciansSurvey),
     db
       .select({ value: techniciansSurvey.hasCertification, count: count() })
       .from(techniciansSurvey)
@@ -154,11 +154,21 @@ export async function getStatsData(): Promise<StatsData> {
       label: PROVINCE_LABELS[r.province as Province] ?? r.province,
       count: r.count,
     })),
-    byWorkFocus: byWorkFocusRows.map((r) => ({
-      value: r.value as MainWorkFocus,
-      label: MAIN_WORK_FOCUS_LABELS[r.value as MainWorkFocus] ?? r.value,
-      count: r.count,
-    })),
+    byWorkFocus: (() => {
+      const counts = new Map<MainWorkFocus, number>();
+      for (const row of workFocusSelectionRows) {
+        for (const focus of row.mainWorkFocus ?? []) {
+          counts.set(focus, (counts.get(focus) ?? 0) + 1);
+        }
+      }
+      return Array.from(counts.entries())
+        .sort((a, b) => b[1] - a[1])
+        .map(([value, count]) => ({
+          value,
+          label: MAIN_WORK_FOCUS_LABELS[value] ?? value,
+          count,
+        }));
+    })(),
     byCertification: byCertRows.map((r) => ({
       value: r.value as HasCertification,
       label:
@@ -171,7 +181,7 @@ export async function getStatsData(): Promise<StatsData> {
       firstName: r.firstName,
       surname: r.surname,
       province: r.province as Province,
-      mainWorkFocus: r.mainWorkFocus as MainWorkFocus,
+      mainWorkFocus: (r.mainWorkFocus ?? []) as MainWorkFocus[],
       status: r.status as SubmissionStatus,
       submittedAt: r.submittedAt,
     })),

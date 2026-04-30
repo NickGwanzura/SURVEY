@@ -12,7 +12,7 @@ type RecentRow = {
   firstName: string;
   surname: string;
   province: Province;
-  mainWorkFocus: MainWorkFocus;
+  mainWorkFocus: MainWorkFocus[];
   status: SubmissionStatus;
   submittedAt: Date | string;
 };
@@ -53,7 +53,11 @@ export function RecentTable({ rows }: { rows: RecentRow[] }) {
                 {PROVINCE_LABELS[r.province] ?? r.province}
               </td>
               <td className="py-2.5 pr-4 text-slate-600">
-                {MAIN_WORK_FOCUS_LABELS[r.mainWorkFocus] ?? r.mainWorkFocus}
+                {r.mainWorkFocus.length === 0
+                  ? "—"
+                  : r.mainWorkFocus
+                      .map((f) => MAIN_WORK_FOCUS_LABELS[f] ?? f)
+                      .join(", ")}
               </td>
               <td className="py-2.5 pr-4">
                 <StatusBadge status={r.status} />
