@@ -19,7 +19,7 @@ export function ConditionalField({
   return (
     <div
       className={cn(
-        "rounded-lg border border-brand-200 bg-brand-50 p-3",
+        "conditional-enter rounded-xl border border-brand-200 bg-brand-50/60 p-3.5",
         className,
       )}
     >

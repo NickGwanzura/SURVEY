@@ -15,13 +15,14 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
     <input
       ref={ref}
       className={cn(
-        "block w-full min-h-[44px] rounded-lg border bg-white px-3 py-2",
+        "block w-full min-h-[48px] rounded-xl border bg-white px-3.5 py-2.5",
         "text-slate-900 placeholder:text-slate-400",
-        "focus:outline-2 focus:outline-offset-1",
+        "transition-colors",
+        "focus:outline-none focus:ring-2 focus:ring-offset-1",
         invalid
-          ? "border-red-500 focus:outline-red-500"
-          : "border-slate-300 focus:outline-brand-600",
-        "disabled:bg-slate-100 disabled:text-slate-500",
+          ? "border-red-400 focus:ring-red-400"
+          : "border-slate-300 focus:border-brand-500 focus:ring-brand-500/30",
+        "disabled:bg-slate-50 disabled:text-slate-400 disabled:border-slate-200",
         className,
       )}
       {...rest}
@@ -39,13 +40,14 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
       <textarea
         ref={ref}
         className={cn(
-          "block w-full rounded-lg border bg-white px-3 py-2",
-          "text-slate-900 placeholder:text-slate-400 min-h-[88px]",
-          "focus:outline-2 focus:outline-offset-1",
+          "block w-full rounded-xl border bg-white px-3.5 py-2.5",
+          "text-slate-900 placeholder:text-slate-400 min-h-[96px]",
+          "transition-colors",
+          "focus:outline-none focus:ring-2 focus:ring-offset-1",
           invalid
-            ? "border-red-500 focus:outline-red-500"
-            : "border-slate-300 focus:outline-brand-600",
-          "disabled:bg-slate-100 disabled:text-slate-500",
+            ? "border-red-400 focus:ring-red-400"
+            : "border-slate-300 focus:border-brand-500 focus:ring-brand-500/30",
+          "disabled:bg-slate-50 disabled:text-slate-400 disabled:border-slate-200",
           className,
         )}
         {...rest}

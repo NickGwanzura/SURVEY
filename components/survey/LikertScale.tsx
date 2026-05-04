@@ -8,7 +8,7 @@ type LikertScaleProps = {
   name: string;
   value: number | undefined;
   onChange: (value: number) => void;
-  labels: [string, string, string, string, string]; // 1..5
+  labels: [string, string, string, string, string];
   invalid?: boolean;
   disabled?: boolean;
 };
@@ -26,8 +26,8 @@ export function LikertScale({
     <div
       role="radiogroup"
       className={cn(
-        "grid grid-cols-1 gap-2 sm:grid-cols-5",
-        invalid && "ring-1 ring-red-300 rounded-lg p-1",
+        "flex flex-col gap-2",
+        invalid && "rounded-xl ring-2 ring-red-400 ring-offset-2",
       )}
     >
       {labels.map((label, i) => {
@@ -39,13 +39,24 @@ export function LikertScale({
             key={v}
             htmlFor={optionId}
             className={cn(
-              "flex min-h-[64px] cursor-pointer items-start gap-3 rounded-lg border p-3 sm:flex-col sm:items-center sm:justify-center sm:text-center",
+              "flex min-h-[52px] cursor-pointer items-center gap-4 rounded-xl border px-4 py-3 transition-colors",
               checked
-                ? "border-brand-600 bg-brand-50 ring-2 ring-brand-600"
-                : "border-slate-300 bg-white hover:border-brand-500",
-              disabled && "opacity-50 cursor-not-allowed",
+                ? "border-brand-600 bg-brand-50 ring-1 ring-brand-600"
+                : "border-slate-200 bg-white hover:border-brand-300 hover:bg-brand-50/50",
+              disabled && "cursor-not-allowed opacity-50",
             )}
           >
+            <span
+              className={cn(
+                "flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 text-sm font-bold transition-colors",
+                checked
+                  ? "border-brand-600 bg-brand-600 text-white"
+                  : "border-slate-300 text-slate-600",
+              )}
+              aria-hidden
+            >
+              {v}
+            </span>
             <input
               id={optionId}
               type="radio"
@@ -54,21 +65,16 @@ export function LikertScale({
               checked={checked}
               disabled={disabled}
               onChange={() => onChange(v)}
-              className="mt-0.5 h-5 w-5 shrink-0 accent-brand-600 sm:mt-0"
+              className="sr-only"
             />
-            <span className="flex flex-col">
-              <span
-                className={cn(
-                  "text-base font-semibold",
-                  checked ? "text-brand-700" : "text-slate-900",
-                )}
-              >
-                {v}
-              </span>
-              <span className="text-xs leading-snug text-slate-600">
-                {label}
-              </span>
+            <span className={cn("text-sm leading-snug", checked ? "font-medium text-brand-800" : "text-slate-700")}>
+              {label}
             </span>
+            {checked ? (
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden className="ml-auto shrink-0 text-brand-600">
+                <path d="M3 8l3.5 3.5L13 4.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            ) : null}
           </label>
         );
       })}

@@ -88,8 +88,9 @@ export function SurveyWizard() {
 
   if (!hydrated) {
     return (
-      <div className="flex h-64 items-center justify-center text-slate-500">
-        Loading…
+      <div className="flex h-64 flex-col items-center justify-center gap-3 text-slate-500">
+        <span className="h-6 w-6 animate-spin rounded-full border-2 border-brand-200 border-t-brand-600" />
+        <span className="text-sm">Loading your saved progress…</span>
       </div>
     );
   }
@@ -201,19 +202,16 @@ export function SurveyWizard() {
         title={STEP_TITLES[step]}
       />
 
-      {!isOnline ? (
-        <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
-          You are working offline. Your answers are auto-saved on this device
-          and will sync when you reconnect.
-        </div>
-      ) : null}
-
       {submitError ? (
         <div
           role="alert"
-          className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-800"
+          className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4"
         >
-          {submitError}
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden className="mt-0.5 shrink-0 text-red-600">
+            <circle cx="9" cy="9" r="8" stroke="currentColor" strokeWidth="1.5" />
+            <path d="M9 5.5v4M9 11.5v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+          </svg>
+          <p className="text-sm text-red-800">{submitError}</p>
         </div>
       ) : null}
 
