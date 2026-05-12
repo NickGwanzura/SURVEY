@@ -7,7 +7,7 @@ type ProgressBarProps = {
 export function ProgressBar({ step, totalSteps, title }: ProgressBarProps) {
   const percent = Math.round((step / totalSteps) * 100);
   return (
-    <div className="flex flex-col gap-2.5 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="flex flex-col gap-2.5 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sticky top-3 z-30 backdrop-blur supports-[backdrop-filter]:bg-white/95">
       <div className="flex items-center justify-between gap-2">
         <span className="flex items-center gap-2">
           <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-brand-600 text-xs font-bold text-white tabular-nums">
