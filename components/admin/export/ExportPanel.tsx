@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { PROVINCES, PROVINCE_LABELS } from "@/lib/constants/provinces";
 import { MAIN_WORK_FOCUS, MAIN_WORK_FOCUS_LABELS } from "@/lib/constants/workFocus";
@@ -82,10 +82,42 @@ export function ExportPanel() {
   const [includePhotos, setIncludePhotos] = useState(false);
   const [loading, setLoading] = useState(false);
   const [banner, setBanner] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [previewCount, setPreviewCount] = useState<number | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
 
   function setFilter(key: keyof Filters, val: string) {
     setFilters((prev) => ({ ...prev, [key]: val }));
   }
+
+  // Fetch preview count when filters change
+  useEffect(() => {
+    let cancelled = false;
+    async function fetchPreview() {
+      setPreviewLoading(true);
+      try {
+        const params = new URLSearchParams();
+        if (filters.province) params.set("province", filters.province);
+        if (filters.mainWorkFocus) params.set("mainWorkFocus", filters.mainWorkFocus);
+        if (filters.hasCertification) params.set("hasCertification", filters.hasCertification);
+        if (filters.status) params.set("status", filters.status);
+        if (filters.yearsExperience) params.set("yearsExperience", filters.yearsExperience);
+        if (filters.educationLevel) params.set("educationLevel", filters.educationLevel);
+        if (filters.dateFrom) params.set("dateFrom", filters.dateFrom);
+        if (filters.dateTo) params.set("dateTo", filters.dateTo);
+        if (filters.q) params.set("q", filters.q);
+        const res = await fetch(`/api/admin/responses?${params.toString()}`);
+        if (!res.ok) throw new Error("Preview failed");
+        const data = await res.json();
+        if (!cancelled) setPreviewCount(data.total ?? 0);
+      } catch {
+        if (!cancelled) setPreviewCount(null);
+      } finally {
+        if (!cancelled) setPreviewLoading(false);
+      }
+    }
+    fetchPreview();
+    return () => { cancelled = true; };
+  }, [filters]);
 
   function toggleSection(key: keyof Sections) {
     setSections((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -93,8 +125,17 @@ export function ExportPanel() {
 
   const sectionControlsDisabled = format === "geojson" || format === "spss";
 
+  const dateError =
+    filters.dateFrom && filters.dateTo && filters.dateFrom > filters.dateTo
+      ? "From date must be before or equal to To date"
+      : null;
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (dateError) {
+      setBanner({ type: "error", message: dateError });
+      return;
+    }
     setLoading(true);
     setBanner(null);
 
@@ -201,7 +242,16 @@ export function ExportPanel() {
 
       {/* Filters */}
       <section className="rounded-xl border border-slate-200 bg-white p-5">
-        <h2 className="mb-3 text-sm font-semibold text-slate-900">Filters</h2>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-slate-900">Filters</h2>
+          <span className="text-xs text-slate-500">
+            {previewLoading
+              ? "Calculating…"
+              : previewCount !== null
+                ? `${previewCount.toLocaleString()} record${previewCount !== 1 ? "s" : ""} match`
+                : ""}
+          </span>
+        </div>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {/* Search */}
           <div className="lg:col-span-3">

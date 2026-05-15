@@ -3,10 +3,11 @@ import { StatCard } from "@/components/admin/StatCard";
 type Cards = {
   total: number;
   today: number;
-  thisWeek: number;
+  last7Days: number;
   verified: number;
   pending: number;
   flagged: number;
+  duplicate: number;
 };
 
 function UsersIcon() {
@@ -79,10 +80,10 @@ export function StatsGrid({ cards }: { cards: Cards }) {
         icon={<CalendarIcon />}
       />
       <StatCard
-        label="This Week"
-        value={cards.thisWeek.toLocaleString()}
-        hint="Last 7 days"
-        tone={cards.thisWeek > 0 ? "success" : "default"}
+        label="Last 7 Days"
+        value={cards.last7Days.toLocaleString()}
+        hint="Rolling 7-day window"
+        tone={cards.last7Days > 0 ? "success" : "default"}
         icon={<WeekIcon />}
       />
       <StatCard
@@ -92,7 +93,7 @@ export function StatsGrid({ cards }: { cards: Cards }) {
         icon={<CheckIcon />}
         hint={
           cards.total > 0
-            ? `${((cards.verified / cards.total) * 100).toFixed(1)}% of total`
+            ? `${((cards.verified / (cards.total - cards.duplicate)) * 100).toFixed(1)}% of reviewable`
             : undefined
         }
       />
@@ -107,6 +108,17 @@ export function StatsGrid({ cards }: { cards: Cards }) {
         value={cards.flagged.toLocaleString()}
         tone={cards.flagged > 0 ? "danger" : "default"}
         icon={<FlagIcon />}
+      />
+      <StatCard
+        label="Duplicates"
+        value={cards.duplicate.toLocaleString()}
+        tone={cards.duplicate > 0 ? "warning" : "default"}
+        icon={
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
+            <rect x="3" y="3" width="10" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
+            <rect x="6" y="6" width="10" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
+          </svg>
+        }
       />
     </div>
   );

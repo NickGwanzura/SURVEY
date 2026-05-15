@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 
@@ -23,23 +23,33 @@ import { cn } from "@/lib/cn";
 function maskPhone(phone: string): string {
   if (phone.length < 4) return "••••";
   const last4 = phone.slice(-4);
-  // Build the mask to the same total width
-  const masked = phone.slice(0, -4).replace(/[+\d]/g, "•");
-  return masked + last4;
+  // Fixed-width mask so digit count is not leaked
+  return `•••• ${last4}`;
 }
 
-function relativeTime(date: Date | string): string {
-  const d = typeof date === "string" ? new Date(date) : date;
-  const diff = Date.now() - d.getTime();
-  const seconds = Math.floor(diff / 1000);
-  if (seconds < 60) return "just now";
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  if (days < 30) return `${days}d ago`;
-  return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+function useRelativeTime(date: Date | string): string {
+  const [text, setText] = useState("");
+
+  useEffect(() => {
+    function format() {
+      const d = typeof date === "string" ? new Date(date) : date;
+      const diff = Date.now() - d.getTime();
+      const seconds = Math.floor(diff / 1000);
+      if (seconds < 60) return "just now";
+      const minutes = Math.floor(seconds / 60);
+      if (minutes < 60) return `${minutes}m ago`;
+      const hours = Math.floor(minutes / 60);
+      if (hours < 24) return `${hours}h ago`;
+      const days = Math.floor(hours / 24);
+      if (days < 30) return `${days}d ago`;
+      return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+    }
+    setText(format());
+    const id = setInterval(() => setText(format()), 60_000);
+    return () => clearInterval(id);
+  }, [date]);
+
+  return text;
 }
 
 function CertBadge({ value }: { value: string }) {
@@ -187,7 +197,7 @@ export function ResponsesTable({ rows, total, page, pageSize }: Props) {
                             : row.submittedAt.toLocaleString()
                         }
                       >
-                        {relativeTime(row.submittedAt)}
+                        {useRelativeTime(row.submittedAt)}
                       </time>
                     </td>
                     <td className="px-4 py-3">

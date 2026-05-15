@@ -6,6 +6,7 @@ import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import L from "leaflet";
+import "leaflet.heat";
 import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
 import MarkerClusterGroup from "react-leaflet-cluster";
 
@@ -64,26 +65,16 @@ function makeIcon(status: SubmissionStatus) {
 
 type HeatPoint = [number, number, number];
 
-// Extend Window to avoid TS complaints about leaflet.heat
-declare global {
-  interface Window {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    L: any;
-  }
-}
-
 function HeatmapLayer({ points }: { points: HeatPoint[] }) {
   const map = useMap();
-  const layerRef = useRef<L.Layer | null>(null);
+  const layerRef = useRef<L.HeatLayer | null>(null);
 
   useEffect(() => {
-    // leaflet.heat attaches to L.heatLayer
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const heat = (L as any).heatLayer(points, {
+    const heat = L.heatLayer(points, {
       radius: 25,
       blur: 15,
       maxZoom: 17,
-      gradient: { 0.4: "#06b6d4", 0.65: "#f59e0b", 1: "#ef4444" },
+      gradient: { 0.4: "#3b82f6", 0.65: "#eab308", 1: "#ef4444" },
     });
     heat.addTo(map);
     layerRef.current = heat;
@@ -91,7 +82,11 @@ function HeatmapLayer({ points }: { points: HeatPoint[] }) {
     return () => {
       map.removeLayer(heat);
     };
-  }, [map, points]);
+  }, [map]);
+
+  useEffect(() => {
+    layerRef.current?.setLatLngs(points);
+  }, [points]);
 
   return null;
 }
@@ -308,23 +303,40 @@ export function TechniciansMap({ markers }: TechniciansMapProps) {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
 
-          {heatmap ? (
-            <HeatmapLayer points={heatPoints} />
-          ) : (
-            <MarkersLayer markers={filtered} />
-          )}
+          {heatmap && <HeatmapLayer points={heatPoints} />}
+          <MarkersLayer markers={filtered} />
         </MapContainer>
       </div>
 
       {/* Legend */}
       <div className="absolute bottom-4 right-4 z-[1000] rounded-lg border border-slate-200 bg-white/90 px-3 py-2 text-xs shadow-sm backdrop-blur-sm">
-        <p className="mb-1.5 font-semibold text-slate-700">Status</p>
-        {(Object.entries(STATUS_COLORS) as [SubmissionStatus, string][]).map(([s, c]) => (
-          <div key={s} className="flex items-center gap-1.5 capitalize">
-            <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: c }} />
-            {s}
-          </div>
-        ))}
+        {heatmap ? (
+          <>
+            <p className="mb-1.5 font-semibold text-slate-700">Density</p>
+            <div className="flex items-center gap-1.5">
+              <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: "#3b82f6" }} />
+              <span>Low</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: "#eab308" }} />
+              <span>Medium</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: "#ef4444" }} />
+              <span>High</span>
+            </div>
+          </>
+        ) : (
+          <>
+            <p className="mb-1.5 font-semibold text-slate-700">Status</p>
+            {(Object.entries(STATUS_COLORS) as [SubmissionStatus, string][]).map(([s, c]) => (
+              <div key={s} className="flex items-center gap-1.5 capitalize">
+                <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: c }} />
+                {s}
+              </div>
+            ))}
+          </>
+        )}
       </div>
     </div>
   );

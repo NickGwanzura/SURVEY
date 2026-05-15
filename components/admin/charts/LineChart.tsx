@@ -34,7 +34,7 @@ export function SubmissionsLineChart({ data, height = 280 }: LineChartProps) {
     <ResponsiveContainer width="100%" height={height}>
       <RechartsLineChart
         data={data}
-        margin={{ top: 4, right: 8, left: -16, bottom: 8 }}
+        margin={{ top: 4, right: 8, left: 8, bottom: 8 }}
       >
         <CartesianGrid strokeDasharray="3 3" vertical={false} />
         <XAxis

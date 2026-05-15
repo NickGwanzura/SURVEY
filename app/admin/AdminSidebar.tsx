@@ -36,6 +36,16 @@ function MapIcon() {
   );
 }
 
+function TechniciansDirectoryIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
+      <path d="M3.5 4.5h11a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1z" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M6 8h6M6 10.5h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M6.25 6.5h.01" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 function InsightsIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
@@ -78,12 +88,23 @@ function CloseIcon() {
   );
 }
 
+function UsersIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
+      <circle cx="9" cy="6" r="3.5" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M1.5 16c0-3.038 3.358-5.5 7.5-5.5s7.5 2.462 7.5 5.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 const NAV_ITEMS = [
   { href: "/admin/dashboard", label: "Dashboard", Icon: DashboardIcon },
   { href: "/admin/responses", label: "Responses", Icon: ResponsesIcon },
   { href: "/admin/map", label: "Map", Icon: MapIcon },
+  { href: "/admin/technicians", label: "Technicians directory", Icon: TechniciansDirectoryIcon },
   { href: "/admin/insights", label: "Insights", Icon: InsightsIcon },
   { href: "/admin/export", label: "Export", Icon: ExportIcon },
+  { href: "/admin/users", label: "Admin Users", Icon: UsersIcon },
 ];
 
 type AdminSidebarProps = {

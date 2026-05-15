@@ -8,7 +8,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Cell,
 } from "recharts";
 
 type BarChartProps = {
@@ -44,8 +43,14 @@ export function SimpleBarChart({
 
   const formatted = data.map((d) => ({
     ...d,
+    _fullLabel: String(d[xAxisKey] ?? ""),
     [xAxisKey]: truncate(String(d[xAxisKey] ?? ""), horizontal ? 30 : 18),
   }));
+
+  const tooltipFormatter = (value: number, _name: string, props: { payload?: { _fullLabel?: string } }) => {
+    const label = props?.payload?._fullLabel ?? "";
+    return [value.toLocaleString(), label];
+  };
 
   if (horizontal) {
     return (
@@ -63,12 +68,8 @@ export function SimpleBarChart({
             width={160}
             tick={{ fontSize: 11 }}
           />
-          <Tooltip formatter={(v: number) => v.toLocaleString()} />
-          <Bar dataKey={dataKey} fill={color} radius={[0, 4, 4, 0]}>
-            {formatted.map((_, i) => (
-              <Cell key={i} fill={color} />
-            ))}
-          </Bar>
+          <Tooltip formatter={tooltipFormatter as unknown as (v: number) => string} />
+          <Bar dataKey={dataKey} fill={color} radius={[0, 4, 4, 0]} />
         </RechartsBarChart>
       </ResponsiveContainer>
     );
@@ -89,12 +90,8 @@ export function SimpleBarChart({
           interval={0}
         />
         <YAxis tick={{ fontSize: 11 }} />
-        <Tooltip formatter={(v: number) => v.toLocaleString()} />
-        <Bar dataKey={dataKey} fill={color} radius={[4, 4, 0, 0]}>
-          {formatted.map((_, i) => (
-            <Cell key={i} fill={color} />
-          ))}
-        </Bar>
+        <Tooltip formatter={tooltipFormatter as unknown as (v: number) => string} />
+        <Bar dataKey={dataKey} fill={color} radius={[4, 4, 0, 0]} />
       </RechartsBarChart>
     </ResponsiveContainer>
   );

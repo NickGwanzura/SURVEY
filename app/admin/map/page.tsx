@@ -40,8 +40,8 @@ export default async function MapPage() {
       hasCertification: r.hasCertification,
       status: r.status,
       yearsExperience: r.yearsExperience,
-      lat: parseFloat(String(r.gpsLatitude)),
-      lng: parseFloat(String(r.gpsLongitude)),
+      lat: Number(r.gpsLatitude),
+      lng: Number(r.gpsLongitude),
     }))
     .filter((m) => !isNaN(m.lat) && !isNaN(m.lng));
 

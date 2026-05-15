@@ -10,16 +10,22 @@ type PaginationProps = {
 };
 
 export function Pagination({ page, pageSize, total, onChange }: PaginationProps) {
-  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const totalPages = Math.ceil(total / pageSize);
   const startRow = total === 0 ? 0 : (page - 1) * pageSize + 1;
   const endRow = Math.min(total, page * pageSize);
+
+  if (total === 0) {
+    return (
+      <div className="px-2 py-3 text-sm text-slate-500">
+        No results
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center justify-between gap-2 px-2 py-3 text-sm sm:flex-row">
       <span className="text-slate-600">
-        {total === 0
-          ? "No results"
-          : `Showing ${startRow}–${endRow} of ${total.toLocaleString()}`}
+        Showing {startRow}–{endRow} of {total.toLocaleString()}
       </span>
       <div className="flex items-center gap-2">
         <Button

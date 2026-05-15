@@ -14,10 +14,11 @@ export type StatsData = {
   cards: {
     total: number;
     today: number;
-    thisWeek: number;
+    last7Days: number;
     verified: number;
     pending: number;
     flagged: number;
+    duplicate: number;
   };
   byProvince: Array<{ province: Province; label: string; count: number }>;
   // byWorkFocus counts how many technicians selected each focus. Since a
@@ -42,8 +43,12 @@ export type StatsData = {
 
 export async function getStatsData(): Promise<StatsData> {
   const now = new Date();
+  // Use Africa/Harare (CAT, UTC+2) for day boundaries since admins are in Zimbabwe
+  const catNow = new Date(
+    now.toLocaleString("en-US", { timeZone: "Africa/Harare" }),
+  );
   const todayStart = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
+    Date.UTC(catNow.getFullYear(), catNow.getMonth(), catNow.getDate()),
   );
   const weekStart = new Date(
     todayStart.getTime() - 6 * 24 * 60 * 60 * 1000,
@@ -59,6 +64,7 @@ export async function getStatsData(): Promise<StatsData> {
     verifiedRows,
     pendingRows,
     flaggedRows,
+    duplicateRows,
     byProvinceRows,
     workFocusSelectionRows,
     byCertRows,
@@ -86,6 +92,10 @@ export async function getStatsData(): Promise<StatsData> {
       .select({ count: count() })
       .from(techniciansSurvey)
       .where(and(sql`${techniciansSurvey.status} = 'flagged'`)),
+    db
+      .select({ count: count() })
+      .from(techniciansSurvey)
+      .where(and(sql`${techniciansSurvey.status} = 'duplicate'`)),
     db
       .select({ province: techniciansSurvey.province, count: count() })
       .from(techniciansSurvey)
@@ -144,12 +154,13 @@ export async function getStatsData(): Promise<StatsData> {
     cards: {
       total: totalRows[0]?.count ?? 0,
       today: todayRows[0]?.count ?? 0,
-      thisWeek: weekRows[0]?.count ?? 0,
+      last7Days: weekRows[0]?.count ?? 0,
       verified: verifiedRows[0]?.count ?? 0,
       pending: pendingRows[0]?.count ?? 0,
       flagged: flaggedRows[0]?.count ?? 0,
+      duplicate: duplicateRows[0]?.count ?? 0,
     },
-    byProvince: byProvinceRows.slice(0, 10).map((r) => ({
+    byProvince: byProvinceRows.map((r) => ({
       province: r.province as Province,
       label: PROVINCE_LABELS[r.province as Province] ?? r.province,
       count: r.count,
