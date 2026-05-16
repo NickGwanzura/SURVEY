@@ -55,11 +55,78 @@ function InsightsIcon() {
   );
 }
 
+function ComparisonIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
+      <rect x="2.5" y="10.5" width="4" height="5" rx="1" stroke="currentColor" strokeWidth="1.5" />
+      <rect x="7" y="6" width="4" height="9.5" rx="1" stroke="currentColor" strokeWidth="1.5" />
+      <rect x="11.5" y="1.5" width="4" height="14" rx="1" stroke="currentColor" strokeWidth="1.5" />
+    </svg>
+  );
+}
+
+function PeriodComparisonIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
+      <rect x="2" y="3" width="6" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
+      <rect x="10" y="3" width="6" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M5 7.5h2M5 10.5h2M12 7.5h2M12 10.5h2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function BuilderIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
+      <path d="M3 10.5l4-4 3 3 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M3 14.5h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function FunnelIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
+      <path d="M2 3.5h14l-5.5 7v4.5l-3 1.5V10.5L2 3.5z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 function ExportIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
       <path d="M9 2v9M6 8l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
       <path d="M3 12v3a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function DuplicateIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
+      <rect x="3.5" y="3.5" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.5" />
+      <rect x="9.5" y="3.5" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.5" />
+      <rect x="3.5" y="9.5" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.5" />
+      <rect x="9.5" y="9.5" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.5" />
+    </svg>
+  );
+}
+
+function CoverageIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
+      <path d="M1.5 4.5l6-3 3 1.5 6-3v12l-6 3-3-1.5-6 3V4.5z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M7.5 3v12M13.5 1.5V13.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function RegistryIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
+      <path d="M3.5 4.5h11a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1z" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M6 8h6M6 10.5h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M6.25 6.5h.01" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
     </svg>
   );
 }
@@ -103,7 +170,14 @@ const NAV_ITEMS = [
   { href: "/admin/map", label: "Map", Icon: MapIcon },
   { href: "/admin/technicians", label: "Technicians directory", Icon: TechniciansDirectoryIcon },
   { href: "/admin/insights", label: "Insights", Icon: InsightsIcon },
+  { href: "/admin/provinces", label: "Province Comparison", Icon: ComparisonIcon },
+  { href: "/admin/comparison", label: "Period Comparison", Icon: PeriodComparisonIcon },
+  { href: "/admin/report-builder", label: "Report Builder", Icon: BuilderIcon },
+  { href: "/admin/funnel", label: "Survey Funnel", Icon: FunnelIcon },
   { href: "/admin/export", label: "Export", Icon: ExportIcon },
+  { href: "/admin/duplicates", label: "Duplicates", Icon: DuplicateIcon },
+  { href: "/admin/coverage", label: "Coverage Gap", Icon: CoverageIcon },
+  { href: "/admin/registry-preview", label: "Registry Preview", Icon: RegistryIcon },
   { href: "/admin/users", label: "Admin Users", Icon: UsersIcon },
 ];
 

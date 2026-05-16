@@ -283,6 +283,27 @@ export const exportLog = pgTable("export_log", {
     .defaultNow(),
 });
 
+export const surveyEvents = pgTable(
+  "survey_events",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    phone: text("phone").notNull(),
+    step: integer("step").notNull(),
+    stepName: text("step_name").notNull(),
+    event: text("event").notNull(),
+    ipAddress: text("ip_address"),
+    userAgent: text("user_agent"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    phoneIdx: index("survey_events_phone_idx").on(table.phone),
+    stepIdx: index("survey_events_step_idx").on(table.step),
+    createdAtIdx: index("survey_events_created_at_idx").on(table.createdAt),
+  }),
+);
+
 export type TechnicianSurvey = typeof techniciansSurvey.$inferSelect;
 export type NewTechnicianSurvey = typeof techniciansSurvey.$inferInsert;
 export type AuditLogEntry = typeof auditLog.$inferSelect;
@@ -293,5 +314,7 @@ export type AdminUser = typeof adminUsers.$inferSelect;
 export type NewAdminUser = typeof adminUsers.$inferInsert;
 export type AdminSession = typeof adminSessions.$inferSelect;
 export type NewAdminSession = typeof adminSessions.$inferInsert;
+export type SurveyEvent = typeof surveyEvents.$inferSelect;
+export type NewSurveyEvent = typeof surveyEvents.$inferInsert;
 
 export const _likertCheckSql = sql`/* Likert checks applied via SQL CHECK constraints in migration */`;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { OfflineBanner, useOnlineStatus } from "@/components/survey/OfflineBanner";
@@ -70,6 +70,29 @@ export function SurveyWizard() {
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const topRef = useRef<HTMLDivElement | null>(null);
+  const hasLoggedView = useRef<Set<number>>(new Set());
+  const currentStepRef = useRef(step);
+
+  useEffect(() => {
+    currentStepRef.current = step;
+  }, [step]);
+
+  const logEvent = useCallback(async (event: string, stepIndex: number) => {
+    try {
+      await fetch("/api/survey/event", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phone: data.phone ?? "unknown",
+          step: stepIndex,
+          stepName: STEP_TITLES[stepIndex],
+          event,
+        }),
+      });
+    } catch {
+      // Silent fail - analytics should not break the survey
+    }
+  }, [data.phone]);
 
   useEffect(() => {
     setData(loadDraft());
@@ -86,6 +109,32 @@ export function SurveyWizard() {
     }
   }, [step]);
 
+  // Log 'view' event when step becomes visible
+  useEffect(() => {
+    if (!hydrated) return;
+    if (hasLoggedView.current.has(step)) return;
+    hasLoggedView.current.add(step);
+    void logEvent("view", step);
+  }, [step, hydrated, logEvent]);
+
+  // Log 'abandon' on page hide / beforeunload
+  useEffect(() => {
+    const handleLeave = () => {
+      void logEvent("abandon", currentStepRef.current);
+    };
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "hidden") {
+        handleLeave();
+      }
+    });
+    window.addEventListener("beforeunload", handleLeave);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleLeave);
+    };
+  }, [logEvent]);
+
   if (!hydrated) {
     return (
       <div className="flex h-64 flex-col items-center justify-center gap-3 text-slate-500">
@@ -96,6 +145,7 @@ export function SurveyWizard() {
   }
 
   const advance = (patch: Partial<SurveySubmission>) => {
+    void logEvent("complete", step);
     setData((prev) => ({ ...prev, ...patch }));
     setStep((s) => Math.min(s + 1, STEP_TITLES.length - 1));
   };

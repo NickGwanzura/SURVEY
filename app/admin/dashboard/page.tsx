@@ -6,6 +6,7 @@ import { getStatsData } from "@/lib/admin/stats-data";
 import { StatsGrid } from "@/components/admin/dashboard/StatsGrid";
 import { ChartsSection } from "@/components/admin/dashboard/ChartsSection";
 import { RecentTable } from "@/components/admin/dashboard/RecentTable";
+import { NotificationBell } from "@/components/admin/NotificationBell";
 
 export const dynamic = "force-dynamic";
 
@@ -41,16 +42,19 @@ export default async function DashboardPage() {
             </p>
           ) : null}
         </div>
-        <Link
-          href="/admin/insights"
-          className="inline-flex items-center gap-2 rounded-xl border border-brand-200 bg-brand-50 px-4 py-2.5 text-sm font-semibold text-brand-700 transition-colors hover:bg-brand-100"
-        >
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
-            <path d="M2 12l3-4 2.5 2 3-5 3 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M2 14h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-          </svg>
-          View Insights
-        </Link>
+        <div className="flex items-center gap-3">
+          <NotificationBell />
+          <Link
+            href="/admin/insights"
+            className="inline-flex items-center gap-2 rounded-xl border border-brand-200 bg-brand-50 px-4 py-2.5 text-sm font-semibold text-brand-700 transition-colors hover:bg-brand-100"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
+              <path d="M2 12l3-4 2.5 2 3-5 3 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M2 14h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+            View Insights
+          </Link>
+        </div>
       </div>
 
       <StatsGrid cards={stats.cards} />
