@@ -21,17 +21,23 @@ export async function getFunnelData(): Promise<FunnelData> {
     "Consent and Submission",
   ];
 
-  const rows = await db.execute(sql`
-    SELECT 
-      step,
-      step_name,
-      COUNT(*) FILTER (WHERE event = 'view')::int AS views,
-      COUNT(*) FILTER (WHERE event = 'complete')::int AS completes
-    FROM survey_events
-    WHERE created_at > NOW() - INTERVAL '30 days'
-    GROUP BY step, step_name
-    ORDER BY step
-  `);
+  let rows: { rows: unknown[] };
+  try {
+    rows = await db.execute(sql`
+      SELECT 
+        step,
+        step_name,
+        COUNT(*) FILTER (WHERE event = 'view')::int AS views,
+        COUNT(*) FILTER (WHERE event = 'complete')::int AS completes
+      FROM survey_events
+      WHERE created_at > NOW() - INTERVAL '30 days'
+      GROUP BY step, step_name
+      ORDER BY step
+    `);
+  } catch {
+    // Table may not exist or DB error — return empty funnel gracefully
+    rows = { rows: [] };
+  }
 
   const data: FunnelData = [];
   let prevCompletes = 0;
