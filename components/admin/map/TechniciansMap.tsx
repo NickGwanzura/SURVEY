@@ -49,10 +49,10 @@ function escapeHtml(str: string): string {
 
 // Status → Tailwind colour mapping for DivIcon
 const STATUS_COLORS: Record<SubmissionStatus, string> = {
-  pending: "#f59e0b",  // amber-400
+  pending: "#f59e0b",  // amber-500
   verified: "#10b981", // emerald-500
   flagged: "#ef4444",  // red-500
-  duplicate: "#9ca3af", // gray-400
+  duplicate: "#94a3b8", // slate-400
 };
 
 function makeIcon(status: SubmissionStatus) {

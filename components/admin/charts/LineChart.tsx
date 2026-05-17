@@ -50,7 +50,7 @@ export function SubmissionsLineChart({ data, height = 280 }: LineChartProps) {
         <Line
           type="monotone"
           dataKey="count"
-          stroke="#2563eb"
+          stroke="#0d4f3c"
           strokeWidth={2}
           dot={false}
           activeDot={{ r: 4 }}

@@ -19,7 +19,7 @@ type BarChartProps = {
   horizontal?: boolean;
 };
 
-const BRAND_COLOR = "#2563eb"; // brand-600
+const BRAND_COLOR = "#0d4f3c"; // brand-600
 
 export function SimpleBarChart({
   data,
