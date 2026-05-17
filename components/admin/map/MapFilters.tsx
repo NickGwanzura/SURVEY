@@ -54,8 +54,9 @@ export function MapFilters({ value, onChange }: MapFiltersProps) {
 
       {/* Province */}
       <div>
-        <label className="mb-1 block text-xs font-medium text-slate-700">Province</label>
+        <label htmlFor="map-filter-province" className="mb-1 block text-xs font-medium text-slate-700">Province</label>
         <select
+          id="map-filter-province"
           value={value.province}
           onChange={(e) => set("province", e.target.value)}
           className="block w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-900 focus:outline-2 focus:outline-brand-600"
@@ -71,8 +72,9 @@ export function MapFilters({ value, onChange }: MapFiltersProps) {
 
       {/* Work focus */}
       <div>
-        <label className="mb-1 block text-xs font-medium text-slate-700">Work focus</label>
+        <label htmlFor="map-focus" className="mb-1 block text-xs font-medium text-slate-700">Work focus</label>
         <select
+          id="map-focus"
           value={value.mainWorkFocus}
           onChange={(e) => set("mainWorkFocus", e.target.value)}
           className="block w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-900 focus:outline-2 focus:outline-brand-600"
@@ -88,8 +90,9 @@ export function MapFilters({ value, onChange }: MapFiltersProps) {
 
       {/* Certification */}
       <div>
-        <label className="mb-1 block text-xs font-medium text-slate-700">Certification</label>
+        <label htmlFor="map-cert" className="mb-1 block text-xs font-medium text-slate-700">Certification</label>
         <select
+          id="map-cert"
           value={value.hasCertification}
           onChange={(e) => set("hasCertification", e.target.value)}
           className="block w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-900 focus:outline-2 focus:outline-brand-600"
@@ -105,8 +108,9 @@ export function MapFilters({ value, onChange }: MapFiltersProps) {
 
       {/* Years experience */}
       <div>
-        <label className="mb-1 block text-xs font-medium text-slate-700">Years experience</label>
+        <label htmlFor="map-exp" className="mb-1 block text-xs font-medium text-slate-700">Years experience</label>
         <select
+          id="map-exp"
           value={value.yearsExperience}
           onChange={(e) => set("yearsExperience", e.target.value)}
           className="block w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-900 focus:outline-2 focus:outline-brand-600"
@@ -122,8 +126,9 @@ export function MapFilters({ value, onChange }: MapFiltersProps) {
 
       {/* Status */}
       <div>
-        <label className="mb-1 block text-xs font-medium text-slate-700">Status</label>
+        <label htmlFor="map-status" className="mb-1 block text-xs font-medium text-slate-700">Status</label>
         <select
+          id="map-status"
           value={value.status}
           onChange={(e) => set("status", e.target.value)}
           className="block w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-900 focus:outline-2 focus:outline-brand-600"

@@ -38,6 +38,15 @@ export type MapMarker = {
 const ZIMBABWE_CENTER: [number, number] = [-19.015, 29.155];
 const INITIAL_ZOOM = 6;
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 // Status → Tailwind colour mapping for DivIcon
 const STATUS_COLORS: Record<SubmissionStatus, string> = {
   pending: "#f59e0b",  // amber-400
@@ -70,7 +79,7 @@ function HeatmapLayer({ points }: { points: HeatPoint[] }) {
   const layerRef = useRef<L.HeatLayer | null>(null);
 
   useEffect(() => {
-    const heat = L.heatLayer(points, {
+    const heat = L.heatLayer([], {
       radius: 25,
       blur: 15,
       maxZoom: 17,
@@ -110,10 +119,10 @@ function MarkersLayer({ markers }: { markers: MapMarker[] }) {
 
         const popupHtml = `
           <div style="min-width:180px;font-family:sans-serif;font-size:13px;line-height:1.5">
-            <p style="font-weight:600;margin:0 0 4px">${m.firstName} ${m.surname}</p>
-            <p style="margin:0;color:#555">${PROVINCE_LABELS[m.province]}</p>
-            <p style="margin:2px 0;color:#555">${focusLabel}</p>
-            <p style="margin:2px 0;color:#555">Experience: ${yearsLabel}</p>
+            <p style="font-weight:600;margin:0 0 4px">${escapeHtml(m.firstName)} ${escapeHtml(m.surname)}</p>
+            <p style="margin:0;color:#555">${escapeHtml(PROVINCE_LABELS[m.province])}</p>
+            <p style="margin:2px 0;color:#555">${escapeHtml(focusLabel)}</p>
+            <p style="margin:2px 0;color:#555">Experience: ${escapeHtml(yearsLabel)}</p>
             <span style="
               display:inline-block;padding:2px 8px;border-radius:999px;
               background:${statusColor}22;color:${statusColor};
@@ -122,7 +131,7 @@ function MarkersLayer({ markers }: { markers: MapMarker[] }) {
             ">${m.status}</span>
             <br/>
             <span style="font-size:11px;color:#777;display:inline-block;margin-top:4px">
-              Certification: ${certLabel}
+              Certification: ${escapeHtml(certLabel)}
             </span>
           </div>
         `;
@@ -251,6 +260,7 @@ export function TechniciansMap({ markers }: TechniciansMapProps) {
         <button
           type="button"
           onClick={() => setSidebarOpen((v) => !v)}
+          aria-expanded={sidebarOpen}
           className="rounded-md border border-slate-300 px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
         >
           {sidebarOpen ? "Hide filters" : "Show filters"}
@@ -259,6 +269,7 @@ export function TechniciansMap({ markers }: TechniciansMapProps) {
         <button
           type="button"
           onClick={() => setHeatmap((v) => !v)}
+          aria-pressed={heatmap}
           className={`rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors ${
             heatmap
               ? "border-brand-600 bg-brand-600 text-white"
@@ -290,7 +301,11 @@ export function TechniciansMap({ markers }: TechniciansMapProps) {
       )}
 
       {/* Map */}
-      <div className={`h-full w-full pt-10 ${sidebarOpen ? "pl-64" : ""}`}>
+      <div
+        className={`h-full w-full pt-10 ${sidebarOpen ? "pl-64" : ""}`}
+        role="region"
+        aria-label="Technician locations map"
+      >
         <MapContainer
           center={ZIMBABWE_CENTER}
           zoom={INITIAL_ZOOM}
@@ -309,7 +324,10 @@ export function TechniciansMap({ markers }: TechniciansMapProps) {
       </div>
 
       {/* Legend */}
-      <div className="absolute bottom-4 right-4 z-[1000] rounded-lg border border-slate-200 bg-white/90 px-3 py-2 text-xs shadow-sm backdrop-blur-sm">
+      <div
+        className="absolute bottom-4 right-4 z-[1000] rounded-lg border border-slate-200 bg-white/90 px-3 py-2 text-xs shadow-sm backdrop-blur-sm"
+        aria-label="Map legend"
+      >
         {heatmap ? (
           <>
             <p className="mb-1.5 font-semibold text-slate-700">Density</p>

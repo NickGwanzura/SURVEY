@@ -43,12 +43,18 @@ export type StatsData = {
 
 export async function getStatsData(): Promise<StatsData> {
   const now = new Date();
-  // Use Africa/Harare (CAT, UTC+2) for day boundaries since admins are in Zimbabwe
-  const catNow = new Date(
-    now.toLocaleString("en-US", { timeZone: "Africa/Harare" }),
-  );
+  // Zimbabwe is CAT (UTC+2) year-round — construct true midnight in Harare.
+  const catParts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Africa/Harare",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(now);
+  const year = Number(catParts.find((p) => p.type === "year")?.value);
+  const month = Number(catParts.find((p) => p.type === "month")?.value);
+  const day = Number(catParts.find((p) => p.type === "day")?.value);
   const todayStart = new Date(
-    Date.UTC(catNow.getFullYear(), catNow.getMonth(), catNow.getDate()),
+    `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}T00:00:00+02:00`,
   );
   const weekStart = new Date(
     todayStart.getTime() - 6 * 24 * 60 * 60 * 1000,
@@ -124,7 +130,7 @@ export async function getStatsData(): Promise<StatsData> {
       .limit(10),
     db
       .select({
-        date: sql<string>`DATE(${techniciansSurvey.submittedAt} AT TIME ZONE 'UTC')`.as(
+        date: sql<string>`DATE(${techniciansSurvey.submittedAt} AT TIME ZONE 'Africa/Harare')`.as(
           "date",
         ),
         count: count(),
@@ -132,10 +138,10 @@ export async function getStatsData(): Promise<StatsData> {
       .from(techniciansSurvey)
       .where(gte(techniciansSurvey.submittedAt, thirtyDaysAgo))
       .groupBy(
-        sql`DATE(${techniciansSurvey.submittedAt} AT TIME ZONE 'UTC')`,
+        sql`DATE(${techniciansSurvey.submittedAt} AT TIME ZONE 'Africa/Harare')`,
       )
       .orderBy(
-        sql`DATE(${techniciansSurvey.submittedAt} AT TIME ZONE 'UTC')`,
+        sql`DATE(${techniciansSurvey.submittedAt} AT TIME ZONE 'Africa/Harare')`,
       ),
   ]);
 
@@ -146,7 +152,9 @@ export async function getStatsData(): Promise<StatsData> {
   const submissionsByDay: Array<{ date: string; count: number }> = [];
   for (let i = 0; i < 30; i++) {
     const d = new Date(thirtyDaysAgo.getTime() + i * 24 * 60 * 60 * 1000);
-    const dateStr = d.toISOString().slice(0, 10);
+    const dateStr = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Africa/Harare",
+    }).format(d);
     submissionsByDay.push({ date: dateStr, count: dayMap.get(dateStr) ?? 0 });
   }
 

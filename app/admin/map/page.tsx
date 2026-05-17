@@ -1,4 +1,4 @@
-import { isNotNull } from "drizzle-orm";
+import { and, isNotNull } from "drizzle-orm";
 import { redirect } from "next/navigation";
 
 import { TechniciansMapLoader } from "@/components/admin/map/TechniciansMapLoader";
@@ -27,7 +27,12 @@ export default async function MapPage() {
       gpsLongitude: techniciansSurvey.gpsLongitude,
     })
     .from(techniciansSurvey)
-    .where(isNotNull(techniciansSurvey.gpsLatitude));
+    .where(
+      and(
+        isNotNull(techniciansSurvey.gpsLatitude),
+        isNotNull(techniciansSurvey.gpsLongitude),
+      ),
+    );
 
   const markers: MapMarker[] = rows
     .filter((r) => r.gpsLatitude != null && r.gpsLongitude != null)

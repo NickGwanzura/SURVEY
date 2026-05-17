@@ -80,6 +80,7 @@ export function LeafletPicker({
       zoom={latitude != null ? 14 : 6}
       scrollWheelZoom
       className="h-full w-full"
+      aria-label="Map for selecting GPS location"
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
