@@ -27,29 +27,25 @@ function maskPhone(phone: string): string {
   return `•••• ${last4}`;
 }
 
-function useRelativeTime(date: Date | string): string {
-  const [text, setText] = useState("");
+function RelativeTime({ date }: { date: Date | string }) {
+  const [, forceUpdate] = useState(0);
 
   useEffect(() => {
-    function format() {
-      const d = typeof date === "string" ? new Date(date) : date;
-      const diff = Date.now() - d.getTime();
-      const seconds = Math.floor(diff / 1000);
-      if (seconds < 60) return "just now";
-      const minutes = Math.floor(seconds / 60);
-      if (minutes < 60) return `${minutes}m ago`;
-      const hours = Math.floor(minutes / 60);
-      if (hours < 24) return `${hours}h ago`;
-      const days = Math.floor(hours / 24);
-      if (days < 30) return `${days}d ago`;
-      return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
-    }
-    setText(format());
-    const id = setInterval(() => setText(format()), 60_000);
+    const id = setInterval(() => forceUpdate((n) => n + 1), 60_000);
     return () => clearInterval(id);
-  }, [date]);
+  }, []);
 
-  return text;
+  const d = typeof date === "string" ? new Date(date) : date;
+  const diff = Date.now() - d.getTime();
+  const seconds = Math.floor(diff / 1000);
+  if (seconds < 60) return "just now";
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 30) return `${days}d ago`;
+  return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 }
 
 function CertBadge({ value }: { value: string }) {
@@ -197,7 +193,7 @@ export function ResponsesTable({ rows, total, page, pageSize }: Props) {
                             : row.submittedAt.toLocaleString()
                         }
                       >
-                        {useRelativeTime(row.submittedAt)}
+                        <RelativeTime date={row.submittedAt} />
                       </time>
                     </td>
                     <td className="px-4 py-3">
