@@ -1,24 +1,10 @@
 "use client";
 
 import { SimpleBarChart } from "@/components/admin/charts/BarChart";
+import { SectionCard } from "@/components/admin/insights/SectionCard";
 import type { InsightsData } from "@/lib/admin/insights-data";
 
 type ResourcesProps = InsightsData["resources"];
-
-function SectionCard({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <h3 className="mb-4 text-sm font-semibold text-slate-700">{title}</h3>
-      {children}
-    </div>
-  );
-}
 
 export function ResourcesSection({
   obstacleMeans,
@@ -66,10 +52,10 @@ export function ResourcesSection({
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-200 text-left text-xs font-medium uppercase tracking-wide text-slate-500">
-                  <th className="pb-2 pr-4">Province</th>
-                  <th className="pb-2 pr-4">#1 Obstacle</th>
-                  <th className="pb-2 pr-4">#2 Obstacle</th>
-                  <th className="pb-2">#3 Obstacle</th>
+                  <th scope="col" className="pb-2 pr-4">Province</th>
+                  <th scope="col" className="pb-2 pr-4">#1 Obstacle</th>
+                  <th scope="col" className="pb-2 pr-4">#2 Obstacle</th>
+                  <th scope="col" className="pb-2">#3 Obstacle</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">

@@ -1,24 +1,10 @@
 "use client";
 
 import { SimpleBarChart } from "@/components/admin/charts/BarChart";
+import { SectionCard } from "@/components/admin/insights/SectionCard";
 import type { InsightsData } from "@/lib/admin/insights-data";
 
 type EnergyProps = InsightsData["energy"];
-
-function SectionCard({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <h3 className="mb-4 text-sm font-semibold text-slate-700">{title}</h3>
-      {children}
-    </div>
-  );
-}
 
 type CorrCell = {
   trained: boolean;
@@ -124,7 +110,7 @@ export function EnergySection({
             data={barrierData}
             horizontal
             color="#ca8a04"
-            height={280}
+            height={240}
           />
         </SectionCard>
       </div>

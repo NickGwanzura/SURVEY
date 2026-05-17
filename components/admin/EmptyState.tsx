@@ -12,7 +12,7 @@ type EmptyStateProps = {
 
 function DefaultIcon() {
   return (
-    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden className="text-slate-300">
+    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true" className="text-slate-300">
       <rect x="4" y="4" width="32" height="32" rx="8" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 3" />
       <path d="M14 20h12M20 14v12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
     </svg>

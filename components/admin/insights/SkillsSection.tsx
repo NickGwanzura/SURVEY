@@ -2,24 +2,10 @@
 
 import { SimpleBarChart } from "@/components/admin/charts/BarChart";
 import { SimplePieChart } from "@/components/admin/charts/PieChart";
+import { SectionCard } from "@/components/admin/insights/SectionCard";
 import type { InsightsData } from "@/lib/admin/insights-data";
 
 type SkillsProps = InsightsData["skills"];
-
-function SectionCard({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <h3 className="mb-4 text-sm font-semibold text-slate-700">{title}</h3>
-      {children}
-    </div>
-  );
-}
 
 export function SkillsSection({
   avgConfidenceTraditional,
@@ -85,9 +71,11 @@ export function SkillsSection({
             {gap.toFixed(2)}
           </p>
           <p className="mt-1 text-xs text-slate-500">
-            {gap > 0.5
-              ? "Low-GWP upskilling needed"
-              : "Confidence levels balanced"}
+            {avgConfidenceTraditional === 0 && avgConfidenceLowGwp === 0
+              ? "No confidence data available"
+              : gap > 0.5
+                ? "Low-GWP upskilling needed"
+                : "Confidence levels balanced"}
           </p>
         </div>
       </div>

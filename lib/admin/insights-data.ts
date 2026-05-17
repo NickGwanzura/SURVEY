@@ -16,7 +16,6 @@ import { techniciansSurvey } from "@/lib/schema";
 import type { Province } from "@/lib/constants/provinces";
 
 type ValueCountRow = { value: string; count: number };
-type ProvValueCountRow = { province: string; value: string; count: number };
 
 export type InsightsData = {
   skills: {
@@ -61,11 +60,6 @@ export type InsightsData = {
   };
   challenges: {
     biggestChallenge: Array<{ value: string; label: string; count: number }>;
-    biggestChallengeByProvince: Array<{
-      province: Province;
-      label: string;
-      top: { value: string; label: string; count: number };
-    }>;
     loadSheddingDistribution: Array<{
       value: string;
       label: string;
@@ -107,39 +101,40 @@ export type InsightsData = {
   meta: { generatedAt: string; sampleSize: number };
 };
 
-const EMPTY_INSIGHTS: InsightsData = {
-  skills: {
-    avgConfidenceTraditional: 0,
-    avgConfidenceLowGwp: 0,
-    confidenceGapByProvince: [],
-    certificationRateByProvince: [],
-    educationDistribution: [],
-  },
-  resources: {
-    obstacleMeans: {
-      importCosts: 0,
-      forexShortages: 0,
-      unreliableSuppliers: 0,
-      counterfeit: 0,
+function createEmptyInsights(): InsightsData {
+  return {
+    skills: {
+      avgConfidenceTraditional: 0,
+      avgConfidenceLowGwp: 0,
+      confidenceGapByProvince: [],
+      certificationRateByProvince: [],
+      educationDistribution: [],
     },
-    topObstaclesByProvince: [],
-    accessMeans: { tools: 0, spareParts: 0, lowGwpRefrigerants: 0 },
-  },
-  challenges: {
-    biggestChallenge: [],
-    biggestChallengeByProvince: [],
-    loadSheddingDistribution: [],
-    recoveryEquipmentUseRate: [],
-    ppeAccessDistribution: [],
-    topEhsBarriers: [],
-  },
-  energy: {
-    energyEfficientInstallRate: [],
-    topEnergyEfficientBarriers: [],
-    correlationTrainingVsEfficient: [],
-  },
-  meta: { generatedAt: new Date().toISOString(), sampleSize: 0 },
-};
+    resources: {
+      obstacleMeans: {
+        importCosts: 0,
+        forexShortages: 0,
+        unreliableSuppliers: 0,
+        counterfeit: 0,
+      },
+      topObstaclesByProvince: [],
+      accessMeans: { tools: 0, spareParts: 0, lowGwpRefrigerants: 0 },
+    },
+    challenges: {
+      biggestChallenge: [],
+      loadSheddingDistribution: [],
+      recoveryEquipmentUseRate: [],
+      ppeAccessDistribution: [],
+      topEhsBarriers: [],
+    },
+    energy: {
+      energyEfficientInstallRate: [],
+      topEnergyEfficientBarriers: [],
+      correlationTrainingVsEfficient: [],
+    },
+    meta: { generatedAt: new Date().toISOString(), sampleSize: 0 },
+  };
+}
 
 export async function getInsightsData(): Promise<InsightsData> {
   const sampleResult = await db
@@ -148,7 +143,7 @@ export async function getInsightsData(): Promise<InsightsData> {
   const sampleSize = sampleResult[0]?.count ?? 0;
 
   if (sampleSize === 0) {
-    return EMPTY_INSIGHTS;
+    return createEmptyInsights();
   }
 
   const [
@@ -160,7 +155,6 @@ export async function getInsightsData(): Promise<InsightsData> {
     obstacleByProvinceRows,
     accessMeansRows,
     biggestChallengeRows,
-    biggestChallengeByProvinceRows,
     loadSheddingRows,
     recoveryEquipmentRows,
     ppeAccessRows,
@@ -228,11 +222,6 @@ export async function getInsightsData(): Promise<InsightsData> {
       ORDER BY count DESC
     `),
     db.execute(sql`
-      SELECT province, biggest_daily_challenge AS value, COUNT(*)::int AS count
-      FROM technicians_survey
-      GROUP BY province, biggest_daily_challenge
-    `),
-    db.execute(sql`
       SELECT load_shedding_frequency AS value, COUNT(*)::int AS count
       FROM technicians_survey
       GROUP BY load_shedding_frequency
@@ -274,6 +263,8 @@ export async function getInsightsData(): Promise<InsightsData> {
         (installs_energy_efficient = 'always') AS always_installs,
         COUNT(*)::int AS count
       FROM technicians_survey
+      WHERE has_formal_training IS NOT NULL
+        AND installs_energy_efficient IS NOT NULL
       GROUP BY has_formal_training, (installs_energy_efficient = 'always')
     `),
   ]);
@@ -403,32 +394,6 @@ export async function getInsightsData(): Promise<InsightsData> {
     }),
   );
 
-  const bcProvMap = new Map<string, Array<{ value: string; count: number }>>();
-  for (const r of biggestChallengeByProvinceRows.rows as ProvValueCountRow[]) {
-    if (!bcProvMap.has(r.province)) bcProvMap.set(r.province, []);
-    bcProvMap.get(r.province)!.push({ value: r.value, count: r.count });
-  }
-  const biggestChallengeByProvince = PROVINCES.flatMap((prov) => {
-    const rows = bcProvMap.get(prov) ?? [];
-    rows.sort((a, b) => b.count - a.count);
-    const top = rows[0];
-    if (!top) return [];
-    return [
-      {
-        province: prov as Province,
-        label: PROVINCE_LABELS[prov as Province],
-        top: {
-          value: top.value,
-          label:
-            BIGGEST_DAILY_CHALLENGE_LABELS[
-              top.value as keyof typeof BIGGEST_DAILY_CHALLENGE_LABELS
-            ] ?? top.value,
-          count: top.count,
-        },
-      },
-    ];
-  });
-
   const lsTotal = (loadSheddingRows.rows as ValueCountRow[]).reduce(
     (s, r) => s + r.count,
     0,
@@ -546,7 +511,6 @@ export async function getInsightsData(): Promise<InsightsData> {
     },
     challenges: {
       biggestChallenge,
-      biggestChallengeByProvince,
       loadSheddingDistribution,
       recoveryEquipmentUseRate,
       ppeAccessDistribution,

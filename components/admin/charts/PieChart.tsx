@@ -10,7 +10,7 @@ import {
 } from "recharts";
 
 type PieChartProps = {
-  data: Array<{ label: string; count: number; percent: number }>;
+  data: Array<{ label: string; count: number }>;
   height?: number;
 };
 
@@ -28,7 +28,11 @@ const COLORS = [
 export function SimplePieChart({ data, height = 280 }: PieChartProps) {
   if (!data || data.length === 0) {
     return (
-      <div className="flex items-center justify-center py-12 text-sm text-slate-400">
+      <div
+        className="flex items-center justify-center py-12 text-sm text-slate-400"
+        role="img"
+        aria-label="No data available"
+      >
         No data available
       </div>
     );
@@ -43,7 +47,7 @@ export function SimplePieChart({ data, height = 280 }: PieChartProps) {
           nameKey="label"
           cx="50%"
           cy="45%"
-          outerRadius={90}
+          outerRadius="80%"
           label={({ percent }: { percent: number }) =>
             `${(percent * 100).toFixed(1)}%`
           }
@@ -62,7 +66,7 @@ export function SimplePieChart({ data, height = 280 }: PieChartProps) {
           formatter={(val: string) =>
             val.length > 28 ? `${val.slice(0, 28)}…` : val
           }
-          wrapperStyle={{ fontSize: 11 }}
+          wrapperStyle={{ fontSize: 12 }}
         />
       </RechartsPieChart>
     </ResponsiveContainer>

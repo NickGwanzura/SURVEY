@@ -11,7 +11,7 @@ import {
 } from "recharts";
 
 type BarChartProps = {
-  data: Array<{ label: string; count: number; [key: string]: unknown }>;
+  data: Array<Record<string, unknown>>;
   dataKey?: string;
   color?: string;
   xAxisKey?: string;
@@ -31,7 +31,11 @@ export function SimpleBarChart({
 }: BarChartProps) {
   if (!data || data.length === 0) {
     return (
-      <div className="flex items-center justify-center py-12 text-sm text-slate-400">
+      <div
+        className="flex items-center justify-center py-12 text-sm text-slate-400"
+        role="img"
+        aria-label="No data available"
+      >
         No data available
       </div>
     );
@@ -47,8 +51,12 @@ export function SimpleBarChart({
     [xAxisKey]: truncate(String(d[xAxisKey] ?? ""), horizontal ? 30 : 18),
   }));
 
-  const tooltipFormatter = (value: number, _name: string, props: { payload?: { _fullLabel?: string } }) => {
-    const label = props?.payload?._fullLabel ?? "";
+  const tooltipFormatter = (
+    value: number,
+    _name: string,
+    props: { payload?: Record<string, unknown> },
+  ) => {
+    const label = String(props?.payload?._fullLabel ?? "");
     return [value.toLocaleString(), label];
   };
 
@@ -79,7 +87,7 @@ export function SimpleBarChart({
     <ResponsiveContainer width="100%" height={height}>
       <RechartsBarChart
         data={formatted}
-        margin={{ top: 4, right: 8, left: -16, bottom: 64 }}
+        margin={{ top: 4, right: 8, left: 8, bottom: 64 }}
       >
         <CartesianGrid strokeDasharray="3 3" vertical={false} />
         <XAxis
