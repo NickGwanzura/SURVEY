@@ -37,10 +37,12 @@ export type ResponseRow = {
   firstName: string;
   surname: string;
   phone: string;
+  email: string | null;
   province: string;
   mainWorkFocus: string[];
   yearsExperience: string;
   hasCertification: string;
+  hevacrazMemberNumber: string | null;
   status: string;
   submittedAt: Date | string;
 };
@@ -70,6 +72,8 @@ export async function listResponses(
         ilike(techniciansSurvey.firstName, pattern),
         ilike(techniciansSurvey.surname, pattern),
         ilike(techniciansSurvey.phone, pattern),
+        ilike(techniciansSurvey.email, pattern),
+        ilike(techniciansSurvey.hevacrazMemberNumber, pattern),
       ),
     );
   }
@@ -101,10 +105,12 @@ export async function listResponses(
         firstName: techniciansSurvey.firstName,
         surname: techniciansSurvey.surname,
         phone: techniciansSurvey.phone,
+        email: techniciansSurvey.email,
         province: techniciansSurvey.province,
         mainWorkFocus: techniciansSurvey.mainWorkFocus,
         yearsExperience: techniciansSurvey.yearsExperience,
         hasCertification: techniciansSurvey.hasCertification,
+        hevacrazMemberNumber: techniciansSurvey.hevacrazMemberNumber,
         status: techniciansSurvey.status,
         submittedAt: techniciansSurvey.submittedAt,
       })

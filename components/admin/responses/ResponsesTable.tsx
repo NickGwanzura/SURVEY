@@ -121,11 +121,14 @@ export function ResponsesTable({ rows, total, page, pageSize }: Props) {
                   />
                 </th>
                 <th className="px-4 py-3">Name</th>
+                <th className="px-4 py-3">Surname</th>
+                <th className="px-4 py-3">Email</th>
                 <th className="px-4 py-3">Phone</th>
                 <th className="px-4 py-3">Province</th>
                 <th className="px-4 py-3">Work focus</th>
                 <th className="px-4 py-3">Experience</th>
                 <th className="px-4 py-3">Cert.</th>
+                <th className="px-4 py-3">Card no.</th>
                 <th className="px-4 py-3">Submitted</th>
                 <th className="px-4 py-3">Status</th>
                 <th className="px-4 py-3">
@@ -154,7 +157,13 @@ export function ResponsesTable({ rows, total, page, pageSize }: Props) {
                       />
                     </td>
                     <td className="px-4 py-3 font-medium text-slate-900">
-                      {row.firstName} {row.surname}
+                      {row.firstName}
+                    </td>
+                    <td className="px-4 py-3 font-medium text-slate-900">
+                      {row.surname}
+                    </td>
+                    <td className="px-4 py-3 text-slate-700">
+                      {row.email ?? "—"}
                     </td>
                     <td className="px-4 py-3 font-mono text-slate-600">
                       {maskPhone(row.phone)}
@@ -179,6 +188,9 @@ export function ResponsesTable({ rows, total, page, pageSize }: Props) {
                     </td>
                     <td className="px-4 py-3">
                       <CertBadge value={row.hasCertification} />
+                    </td>
+                    <td className="px-4 py-3 font-mono text-slate-600 whitespace-nowrap">
+                      {row.hevacrazMemberNumber ?? "—"}
                     </td>
                     <td className="px-4 py-3 text-slate-500 whitespace-nowrap">
                       <time

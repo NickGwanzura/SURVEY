@@ -1,12 +1,17 @@
 import "server-only";
 
-import { and, count, desc, eq } from "drizzle-orm";
+import { and, count, desc, eq, ilike, or, type SQL } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "@/lib/db";
 import { techniciansSurvey } from "@/lib/schema";
+import { HAS_CERTIFICATION_OPTIONS } from "@/lib/constants/refrigerants";
+import { PROVINCES } from "@/lib/constants/provinces";
 
 export const listTechniciansDirectoryParamsSchema = z.object({
+  q: z.string().trim().max(200).optional(),
+  province: z.enum(PROVINCES).optional(),
+  hasCertification: z.enum(HAS_CERTIFICATION_OPTIONS).optional(),
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(100).default(25),
 });
@@ -19,8 +24,11 @@ export type TechniciansDirectoryRow = {
   id: string;
   firstName: string;
   surname: string;
+  phone: string;
+  email: string | null;
   province: string;
   hasCertification: string;
+  hevacrazMemberNumber: string | null;
   submittedAt: Date | string;
 };
 
@@ -39,11 +47,27 @@ const REGISTERED_CONDITIONS = [
 export async function listRegisteredTechniciansDirectory(
   params: ListTechniciansDirectoryParams,
 ): Promise<ListTechniciansDirectoryResult> {
-  const { page, pageSize } = params;
+  const { q, province, hasCertification, page, pageSize } = params;
 
+  const conditions: (SQL | undefined)[] = [...REGISTERED_CONDITIONS];
+
+  if (q) {
+    const pattern = `%${q}%`;
+    conditions.push(
+      or(
+        ilike(techniciansSurvey.firstName, pattern),
+        ilike(techniciansSurvey.surname, pattern),
+        ilike(techniciansSurvey.phone, pattern),
+        ilike(techniciansSurvey.email, pattern),
+        ilike(techniciansSurvey.hevacrazMemberNumber, pattern),
+      ),
+    );
+  }
+  if (province) conditions.push(eq(techniciansSurvey.province, province));
+  if (hasCertification) conditions.push(eq(techniciansSurvey.hasCertification, hasCertification));
+
+  const where = and(...conditions);
   const offset = (page - 1) * pageSize;
-
-  const where = and(...REGISTERED_CONDITIONS);
 
   const [rowsResult, [{ total }]] = await Promise.all([
     db
@@ -51,8 +75,11 @@ export async function listRegisteredTechniciansDirectory(
         id: techniciansSurvey.id,
         firstName: techniciansSurvey.firstName,
         surname: techniciansSurvey.surname,
+        phone: techniciansSurvey.phone,
+        email: techniciansSurvey.email,
         province: techniciansSurvey.province,
         hasCertification: techniciansSurvey.hasCertification,
+        hevacrazMemberNumber: techniciansSurvey.hevacrazMemberNumber,
         submittedAt: techniciansSurvey.submittedAt,
       })
       .from(techniciansSurvey)

@@ -122,11 +122,11 @@ export function FilterBar() {
         {/* Search */}
         <div className="sm:col-span-2 lg:col-span-2">
           <label htmlFor="filter-q" className="sr-only">
-            Search by name or phone
+            Search by name, phone, email, or card number
           </label>
           <Input
             id="filter-q"
-            placeholder="Search by name or phone…"
+            placeholder="Search by name, phone, email, or card number…"
             value={q}
             onChange={(e) => handleSearch(e.target.value)}
           />

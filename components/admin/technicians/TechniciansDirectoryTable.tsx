@@ -5,8 +5,6 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Pagination } from "@/components/admin/Pagination";
 import { EmptyState } from "@/components/admin/EmptyState";
 import { Badge } from "@/components/admin/Badge";
-import { PROVINCE_LABELS } from "@/lib/constants/provinces";
-import type { Province } from "@/lib/constants/provinces";
 import type { TechniciansDirectoryRow } from "@/lib/admin/technicians-directory-data";
 import { cn } from "@/lib/cn";
 
@@ -16,6 +14,12 @@ type Props = {
   page: number;
   pageSize: number;
 };
+
+function maskPhone(phone: string): string {
+  if (phone.length < 4) return "••••";
+  const last4 = phone.slice(-4);
+  return `•••• ${last4}`;
+}
 
 function CertificationBadge({ value }: { value: string }) {
   if (value === "yes") {
@@ -65,9 +69,11 @@ export function TechniciansDirectoryTable({ rows, total, page, pageSize }: Props
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
                 <th className="px-4 py-3">Name</th>
-                <th className="px-4 py-3">Province</th>
-                <th className="px-4 py-3">Has certification</th>
-                <th className="px-4 py-3">Submitted</th>
+                <th className="px-4 py-3">Surname</th>
+                <th className="px-4 py-3">Email</th>
+                <th className="px-4 py-3">Phone</th>
+                <th className="px-4 py-3">Certification</th>
+                <th className="px-4 py-3">Card number</th>
               </tr>
             </thead>
 
@@ -75,20 +81,22 @@ export function TechniciansDirectoryTable({ rows, total, page, pageSize }: Props
               {rows.map((row) => (
                 <tr key={row.id} className="hover:bg-slate-50">
                   <td className="px-4 py-3 font-medium text-slate-900">
-                    {row.firstName} {row.surname}
+                    {row.firstName}
                   </td>
-                  <td className="px-4 py-3 text-slate-700">{PROVINCE_LABELS[row.province as Province] ?? row.province}</td>
+                  <td className="px-4 py-3 font-medium text-slate-900">
+                    {row.surname}
+                  </td>
+                  <td className="px-4 py-3 text-slate-700">
+                    {row.email ?? "—"}
+                  </td>
+                  <td className="px-4 py-3 font-mono text-slate-700 whitespace-nowrap">
+                    {maskPhone(row.phone)}
+                  </td>
                   <td className="px-4 py-3">
                     <CertificationBadge value={row.hasCertification} />
                   </td>
-                  <td className="px-4 py-3 text-slate-500 whitespace-nowrap">
-                    {row.submittedAt
-                      ? new Date(row.submittedAt).toLocaleDateString("en-GB", {
-                          day: "2-digit",
-                          month: "short",
-                          year: "numeric",
-                        })
-                      : "—"}
+                  <td className="px-4 py-3 font-mono text-slate-700 whitespace-nowrap">
+                    {row.hevacrazMemberNumber ?? "—"}
                   </td>
                 </tr>
               ))}
