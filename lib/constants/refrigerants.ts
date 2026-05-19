@@ -18,6 +18,7 @@ export const CERTIFICATION_TYPES = [
   "city_and_guilds",
   "manufacturer_specific",
   "international",
+  "hc_certification",
   "other",
 ] as const;
 
@@ -29,6 +30,7 @@ export const CERTIFICATION_TYPE_LABELS: Record<CertificationType, string> = {
   city_and_guilds: "City and Guilds",
   manufacturer_specific: "Manufacturer-specific certification",
   international: "International certification",
+  hc_certification: "HC (Hydrocarbon) Certification",
   other: "Other",
 };
 

@@ -1,0 +1,1 @@
+ALTER TABLE "technicians_survey" ADD COLUMN "certification_number" text;

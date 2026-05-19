@@ -9,6 +9,7 @@ import {
   getResponseById,
   patchResponseSchema,
 } from "@/lib/admin/responses-data";
+import { sendFlaggedEmail, sendVerifiedEmail } from "@/lib/admin/email";
 
 const idSchema = z.string().uuid();
 
@@ -131,6 +132,27 @@ export async function PATCH(
         actorAdminUserId: admin.user.id,
         action,
         payload: { field, before: diff.before, after: diff.after },
+      });
+    }
+
+    // Send notification email when status changes to verified or flagged
+    if (updates.status === "verified" && before.email) {
+      sendVerifiedEmail(
+        before.email,
+        before.firstName,
+        before.surname,
+        before.consentToPublicRegistry,
+      ).then((r) => {
+        if (!r.ok) console.warn(`[PATCH] Failed to notify ${before.email}: ${r.error}`);
+      });
+    } else if (updates.status === "flagged" && before.email) {
+      sendFlaggedEmail(
+        before.email,
+        before.firstName,
+        before.surname,
+        updates.flagReason,
+      ).then((r) => {
+        if (!r.ok) console.warn(`[PATCH] Failed to notify ${before.email}: ${r.error}`);
       });
     }
 

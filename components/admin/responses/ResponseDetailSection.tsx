@@ -13,7 +13,7 @@ export function ResponseDetailSection({ title, children, className }: Props) {
     <section
       aria-labelledby={`section-${title.toLowerCase().replace(/\s+/g, "-")}`}
       className={cn(
-        "rounded-xl border border-slate-200 bg-white p-6 shadow-sm",
+        "rounded-xl border border-slate-200 bg-white p-6 shadow-sm card-hover",
         className,
       )}
     >

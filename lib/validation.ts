@@ -137,6 +137,7 @@ export const skillsTrainingStepSchema = z
       .array(z.enum(CERTIFICATION_TYPES))
       .optional()
       .default([]),
+    certificationNumber: optionalShortString,
     hevacrazMemberNumber: optionalShortString,
     confidenceTraditionalRefrigerants: likertField(
       "Confidence with traditional refrigerants",
@@ -325,6 +326,7 @@ export const surveySubmissionSchema = z
     trainingYear: z.number().int().min(1950).max(2100).nullable().optional(),
     hasCertification: z.enum(HAS_CERTIFICATION_OPTIONS),
     certificationsHeld: z.array(z.enum(CERTIFICATION_TYPES)).optional(),
+    certificationNumber: optionalShortString,
     hevacrazMemberNumber: optionalShortString,
     confidenceTraditionalRefrigerants: likertField("Confidence (traditional)"),
     confidenceLowGwpRefrigerants: likertField("Confidence (low-GWP)"),

@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -7,10 +8,11 @@ import { StatsGrid } from "@/components/admin/dashboard/StatsGrid";
 import { ChartsSection } from "@/components/admin/dashboard/ChartsSection";
 import { RecentTable } from "@/components/admin/dashboard/RecentTable";
 import { NotificationBell } from "@/components/admin/NotificationBell";
+import { Skeleton, SkeletonCard, SkeletonChart, SkeletonTable } from "@/components/ui/Skeleton";
 
 export const dynamic = "force-dynamic";
 
-export default async function DashboardPage() {
+async function DashboardContent() {
   const admin = await getCurrentAdmin();
   if (!admin) redirect("/admin/login");
 
@@ -27,7 +29,7 @@ export default async function DashboardPage() {
     : null;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 page-enter">
       <div className="flex flex-col gap-4 border-b border-slate-200 pb-6 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-brand-600">
@@ -66,7 +68,7 @@ export default async function DashboardPage() {
         submissionsByDay={stats.submissionsByDay}
       />
 
-      <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <section className="rounded-2xl border border-slate-200 bg-white shadow-sm card-hover">
         <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
           <div>
             <h2 className="text-sm font-semibold text-slate-900">
@@ -89,5 +91,40 @@ export default async function DashboardPage() {
         </div>
       </section>
     </div>
+  );
+}
+
+export default async function DashboardPage() {
+  return (
+    <Suspense fallback={
+      <div className="space-y-8">
+        <div className="pb-6">
+          <Skeleton className="h-3 w-24 mb-2" />
+          <Skeleton className="h-7 w-64 mb-1" />
+          <Skeleton className="h-4 w-40" />
+        </div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 7 }).map((_, i) => (
+            <SkeletonCard key={i} />
+          ))}
+        </div>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <SkeletonChart />
+          <SkeletonChart />
+          <SkeletonChart />
+          <SkeletonChart />
+        </div>
+        <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="border-b border-slate-100 px-5 py-4">
+            <Skeleton className="h-4 w-36" />
+          </div>
+          <div className="p-5">
+            <SkeletonTable rows={5} cols={5} />
+          </div>
+        </div>
+      </div>
+    }>
+      <DashboardContent />
+    </Suspense>
   );
 }

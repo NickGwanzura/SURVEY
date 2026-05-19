@@ -4,6 +4,7 @@ import { getCurrentAdmin } from "@/lib/auth-server";
 import { listAdminUsers } from "@/lib/admin/admin-users-data";
 import { Badge } from "@/components/admin/Badge";
 import { EmptyState } from "@/components/admin/EmptyState";
+import { InviteAdminModal } from "@/components/admin/users/InviteAdminModal";
 
 export const dynamic = "force-dynamic";
 
@@ -31,11 +32,16 @@ export default async function AdminUsersPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">Admin Users</h1>
-        <p className="mt-1 text-sm text-slate-500">
-          {users.length} account{users.length !== 1 ? "s" : ""} with portal access
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Admin Users</h1>
+          <p className="mt-1 text-sm text-slate-500">
+            {users.length} account{users.length !== 1 ? "s" : ""} with portal access
+          </p>
+        </div>
+        {admin.user.role === "super_admin" && (
+          <InviteAdminModal />
+        )}
       </div>
 
       {users.length === 0 ? (

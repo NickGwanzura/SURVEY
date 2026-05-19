@@ -250,6 +250,7 @@ export function SurveyWizard() {
         step={step + 1}
         totalSteps={STEP_TITLES.length}
         title={STEP_TITLES[step]}
+        stepTitles={STEP_TITLES}
       />
 
       {submitError ? (

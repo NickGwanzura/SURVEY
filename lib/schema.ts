@@ -157,6 +157,7 @@ export const techniciansSurvey = pgTable(
 
     hasCertification: hasCertificationEnum("has_certification").notNull(),
     certificationsHeld: jsonb("certifications_held").$type<string[]>(),
+    certificationNumber: text("certification_number"),
     hevacrazMemberNumber: text("hevacraz_member_number"),
 
     confidenceTraditionalRefrigerants: integer(

@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 
 import { db } from "@/lib/db";
+import { sendSurveyCompletedEmail } from "@/lib/admin/email";
 import { techniciansSurvey } from "@/lib/schema";
 import { surveySubmissionSchema } from "@/lib/validation";
 
@@ -77,6 +78,7 @@ export async function POST(req: NextRequest) {
       trainingYear: data.trainingYear ?? null,
       hasCertification: data.hasCertification,
       certificationsHeld: data.certificationsHeld ?? null,
+      certificationNumber: data.certificationNumber,
       hevacrazMemberNumber: data.hevacrazMemberNumber,
       confidenceTraditionalRefrigerants: data.confidenceTraditionalRefrigerants,
       confidenceLowGwpRefrigerants: data.confidenceLowGwpRefrigerants,
@@ -115,8 +117,24 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  const referenceNumber = inserted.id.slice(0, 8).toUpperCase();
+
+  // Send confirmation email asynchronously — don't block the response
+  if (data.email && data.firstName) {
+    sendSurveyCompletedEmail(data.email, data.firstName, referenceNumber).then(
+      (result) => {
+        if (!result.ok) {
+          console.warn(
+            `[survey/submit] Failed to send confirmation email to ${data.email}:`,
+            result.error,
+          );
+        }
+      },
+    );
+  }
+
   return NextResponse.json({
     id: inserted.id,
-    referenceNumber: inserted.id.slice(0, 8).toUpperCase(),
+    referenceNumber,
   });
 }

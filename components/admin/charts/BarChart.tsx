@@ -113,6 +113,15 @@ export function SimpleBarChart({
             isAnimationActive={true}
             animationDuration={600}
             animationEasing="ease-out"
+            label={{
+              position: "right",
+              formatter: (_value: number, entry: { payload?: Record<string, unknown> }) => {
+                const pct = Number(entry?.payload?._pct ?? 0);
+                return pct > 5 ? `${pct.toFixed(1)}%` : "";
+              },
+              fontSize: 10,
+              fill: "#64748b",
+            }}
           />
         </RechartsBarChart>
       </ResponsiveContainer>
@@ -147,6 +156,15 @@ export function SimpleBarChart({
           isAnimationActive={true}
           animationDuration={600}
           animationEasing="ease-out"
+          label={{
+            position: "top",
+            formatter: (_value: number, entry: { payload?: Record<string, unknown> }) => {
+              const pct = Number(entry?.payload?._pct ?? 0);
+              return pct > 5 ? `${pct.toFixed(1)}%` : "";
+            },
+            fontSize: 10,
+            fill: "#64748b",
+          }}
         />
       </RechartsBarChart>
     </ResponsiveContainer>

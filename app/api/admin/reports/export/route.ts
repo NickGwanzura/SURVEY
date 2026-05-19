@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentAdmin } from "@/lib/auth-server";
+import { generateReportPdf } from "@/lib/admin/report-pdf";
 import { 
   getMethodologyData, 
   getSkillsGapData, 
@@ -10,6 +11,24 @@ import {
   convertToCsv
 } from "@/lib/admin/reports-data";
 
+const DATA_FETCHERS: Record<string, () => Promise<Record<string, { label: any; count: number }[]>>> = {
+  methodology: getMethodologyData,
+  "skills-gap": getSkillsGapData,
+  "tools-needs": getToolsNeedsData,
+  "barrier-analysis": getBarrierAnalysisData,
+  "geo-mapping": getGeoMappingData,
+  "achievement-gaps": getAchievementGapsData,
+};
+
+const FILE_NAMES: Record<string, string> = {
+  methodology: "Methodology_and_Readiness_Report",
+  "skills-gap": "Skills_Gap_Analysis",
+  "tools-needs": "Tools_and_Equipment_Needs",
+  "barrier-analysis": "Barrier_Analysis",
+  "geo-mapping": "Geo_Mapping",
+  "achievement-gaps": "Achievement_and_Residual_Gaps",
+};
+
 export async function GET(request: NextRequest) {
   const admin = await getCurrentAdmin();
   if (!admin) {
@@ -18,42 +37,30 @@ export async function GET(request: NextRequest) {
 
   const { searchParams } = new URL(request.url);
   const reportType = searchParams.get("report");
+  const format = searchParams.get("format") ?? "csv";
 
-  if (!reportType) {
-    return NextResponse.json({ error: "Missing report parameter" }, { status: 400 });
+  if (!reportType || !DATA_FETCHERS[reportType]) {
+    return NextResponse.json({ error: "Missing or invalid report parameter" }, { status: 400 });
   }
 
-  let data: Record<string, { label: any; count: number }[]> = {};
-  let filename = "report.csv";
+  if (format !== "csv" && format !== "pdf") {
+    return NextResponse.json({ error: "Invalid format. Use 'csv' or 'pdf'." }, { status: 400 });
+  }
 
   try {
-    switch (reportType) {
-      case "methodology":
-        data = await getMethodologyData();
-        filename = "Methodology_and_Readiness_Report.csv";
-        break;
-      case "skills-gap":
-        data = await getSkillsGapData();
-        filename = "Skills_Gap_Analysis.csv";
-        break;
-      case "tools-needs":
-        data = await getToolsNeedsData();
-        filename = "Tools_and_Equipment_Needs.csv";
-        break;
-      case "barrier-analysis":
-        data = await getBarrierAnalysisData();
-        filename = "Barrier_Analysis.csv";
-        break;
-      case "geo-mapping":
-        data = await getGeoMappingData();
-        filename = "Geo_Mapping.csv";
-        break;
-      case "achievement-gaps":
-        data = await getAchievementGapsData();
-        filename = "Achievement_and_Residual_Gaps.csv";
-        break;
-      default:
-        return NextResponse.json({ error: "Invalid report type" }, { status: 400 });
+    const data = await DATA_FETCHERS[reportType]();
+    const baseName = FILE_NAMES[reportType] ?? "Report";
+
+    if (format === "pdf") {
+      const pdfBuffer = generateReportPdf(reportType, data);
+
+      return new Response(new Blob([new Uint8Array(pdfBuffer)], { type: "application/pdf" }), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/pdf",
+          "Content-Disposition": `attachment; filename="${baseName}.pdf"`,
+        },
+      });
     }
 
     const csvStr = convertToCsv(data);
@@ -62,7 +69,7 @@ export async function GET(request: NextRequest) {
       status: 200,
       headers: {
         "Content-Type": "text/csv; charset=utf-8",
-        "Content-Disposition": `attachment; filename="${filename}"`,
+        "Content-Disposition": `attachment; filename="${baseName}.csv"`,
       },
     });
 

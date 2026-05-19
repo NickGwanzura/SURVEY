@@ -157,6 +157,8 @@ const SPSS_COLUMNS: SpssCol[] = [
     },
   },
   { name: "has_cert", label: "Has certification (1=yes,2=no,3=studying)", getValue: (r) => CERTIFICATION_CODES[r.hasCertification] ?? 99 },
+  { name: "cert_no", label: "Certification number", getValue: (r) => r.certificationNumber ?? "" },
+  { name: "hev_no", label: "HEVACRAZ member number", getValue: (r) => r.hevacrazMemberNumber ?? "" },
   { name: "gps_lat", label: "GPS latitude", getValue: (r) => r.gpsLatitude != null ? String(r.gpsLatitude) : "" },
   { name: "gps_lng", label: "GPS longitude", getValue: (r) => r.gpsLongitude != null ? String(r.gpsLongitude) : "" },
   { name: "conf_tr", label: "Confidence traditional refrigerants (1-5)", getValue: (r) => r.confidenceTraditionalRefrigerants },

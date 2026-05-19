@@ -101,10 +101,101 @@ body {
   animation: conditional-in 0.18s ease-out both;
 }
 
+/* Card hover lift effect */
+@keyframes card-lift {
+  to {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  }
+}
+
+.card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+}
+
+/* Subtle border highlight on hover */
+.border-highlight {
+  transition: border-color 0.2s ease;
+}
+
+.border-highlight:hover {
+  border-color: var(--color-brand-300);
+}
+
+/* Fade-in animation for page content */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-enter {
+  animation: fade-in-up 0.25s ease-out both;
+}
+
+/* Modal backdrop fade */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-in {
+  animation: fade-in 0.15s ease-out both;
+}
+
+/* Slide up from bottom (for mobile modals) */
+@keyframes slide-in-from-bottom-4 {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-in-from-bottom-4 {
+  animation: slide-in-from-bottom-4 0.2s ease-out both;
+}
+
+/* Skeleton shimmer effect */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    #e2e8f0 25%,
+    #f1f5f9 50%,
+    #e2e8f0 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .toast-animate,
-  .conditional-enter {
+  .conditional-enter,
+  .page-enter,
+  .animate-in,
+  .slide-in-from-bottom-4,
+  .skeleton-shimmer,
+  .card-hover {
     animation: none !important;
+    transition: none !important;
   }
   html {
     scroll-behavior: auto;

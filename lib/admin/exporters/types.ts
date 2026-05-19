@@ -59,6 +59,7 @@ export const ALL_COLUMNS: ColDef[] = [
   { header: "Training year", key: "trainingYear", section: "skills" },
   { header: "Has certification", key: "hasCertification", section: "skills" },
   { header: "Certifications held", key: "certificationsHeld", section: "skills" },
+  { header: "Certification no.", key: "certificationNumber", section: "skills" },
   { header: "HEVACRAZ member no.", key: "hevacrazMemberNumber", section: "skills" },
   { header: "Confidence: traditional refrigerants", key: "confidenceTraditionalRefrigerants", section: "skills" },
   { header: "Confidence: low-GWP refrigerants", key: "confidenceLowGwpRefrigerants", section: "skills" },

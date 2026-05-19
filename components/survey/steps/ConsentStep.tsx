@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 
+import { AnswerReview } from "@/components/survey/AnswerReview";
 import { PhotoCapture } from "@/components/survey/PhotoCapture";
 import { StepShell } from "@/components/survey/StepShell";
 import { Field, FieldGroup } from "@/components/ui/Field";
@@ -79,6 +80,9 @@ export function ConsentStep({
         nextLabel={isSubmitting ? "Submitting…" : "Submit survey"}
         isSubmitting={isSubmitting}
       >
+        <AnswerReview data={defaultValues} />
+
+        <hr className="border-slate-200" />
         <FieldGroup
           legend="Consent to be contacted by NOU / HEVACRAZ"
           required

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getCurrentAdmin } from "@/lib/auth-server";
 import { getInsightsData } from "@/lib/admin/insights-data";
 import { EmptyState } from "@/components/admin/EmptyState";
+import { SummaryStatsBar } from "@/components/admin/insights/SummaryStatsBar";
 import { SkillsSection } from "@/components/admin/insights/SkillsSection";
 import { ResourcesSection } from "@/components/admin/insights/ResourcesSection";
 import { ChallengesSection } from "@/components/admin/insights/ChallengesSection";
@@ -51,6 +52,7 @@ export default async function InsightsPage() {
         />
       ) : (
         <>
+          <SummaryStatsBar insights={insights} />
           <SkillsSection {...insights.skills} />
           <ResourcesSection {...insights.resources} />
           <ChallengesSection {...insights.challenges} />

@@ -18,6 +18,14 @@ export default async function AdminLayout({
 
   return (
     <AdminProviders>
+      {/* Skip-to-content link for keyboard users */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] focus:rounded-lg focus:bg-brand-600 focus:px-4 focus:py-2.5 focus:text-sm focus:font-semibold focus:text-white focus:shadow-lg"
+      >
+        Skip to main content
+      </a>
+
       <div className="flex min-h-screen flex-col bg-slate-50 lg:flex-row">
         <AdminSidebar
           user={{
@@ -27,7 +35,7 @@ export default async function AdminLayout({
           }}
         />
 
-        <main className="min-w-0 flex-1 px-4 py-6 lg:px-8 lg:py-8">
+        <main id="main-content" className="min-w-0 flex-1 px-4 py-6 lg:px-8 lg:py-8 outline-none" tabIndex={-1}>
           <div className="mx-auto max-w-7xl">{children}</div>
         </main>
 

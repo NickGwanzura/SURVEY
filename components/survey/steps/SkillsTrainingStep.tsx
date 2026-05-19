@@ -185,6 +185,18 @@ export function SkillsTrainingStep({ defaultValues, onNext, onBack }: Props) {
               />
             </FieldGroup>
 
+            <Field
+              label="Certification Number"
+              htmlFor="certificationNumber"
+              error={form.formState.errors.certificationNumber?.message}
+            >
+              <Input
+                id="certificationNumber"
+                invalid={Boolean(form.formState.errors.certificationNumber)}
+                {...form.register("certificationNumber")}
+              />
+            </Field>
+
             {certificationsHeld.includes("hevacraz_membership") ? (
               <Field
                 label="HEVACRAZ Membership Number"

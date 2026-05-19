@@ -53,7 +53,7 @@ export function StatCard({
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-2xl border p-5 shadow-sm",
+        "relative overflow-hidden rounded-2xl border p-5 shadow-sm card-hover",
         styles.card,
         className,
       )}

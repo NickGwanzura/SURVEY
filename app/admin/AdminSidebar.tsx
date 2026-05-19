@@ -5,7 +5,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/Button";
-import { cn } from "@/lib/cn";
+import { useToast } from "@/components/ui/Toast";
+import { cn } from "@/lib/cn"
 
 function DashboardIcon() {
   return (
@@ -164,6 +165,15 @@ function UsersIcon() {
   );
 }
 
+function MessageIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
+      <path d="M3 3.5h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H6l-3 3V4.5a1 1 0 0 1 1-1z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M5.5 7.5h7M5.5 10h4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 function DocumentReportIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
@@ -197,6 +207,7 @@ const NAV_ITEMS = [
 
   { heading: "Settings" },
   { href: "/admin/registry-preview", label: "Registry Preview", Icon: RegistryIcon },
+  { href: "/admin/messaging", label: "Message Board", Icon: MessageIcon },
   { href: "/admin/users", label: "Admin Users", Icon: UsersIcon },
 ];
 
@@ -210,12 +221,34 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
   const [loggingOut, setLoggingOut] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  const toast = useToast();
+
   async function handleLogout() {
     setLoggingOut(true);
     try {
-      await fetch("/api/admin/auth/logout", { method: "POST" });
+      const res = await fetch("/api/admin/auth/logout", { method: "POST" });
+      if (!res.ok) {
+        const data = (await res.json().catch(() => null)) as { error?: string } | null;
+        toast.push({
+          variant: "error",
+          title: "Sign out failed",
+          description: data?.error ?? `HTTP ${res.status}`,
+        });
+        return;
+      }
+      toast.push({
+        variant: "success",
+        title: "Signed out",
+        description: "You have been successfully signed out.",
+      });
       router.push("/admin/login");
       router.refresh();
+    } catch (err) {
+      toast.push({
+        variant: "error",
+        title: "Sign out failed",
+        description: err instanceof Error ? err.message : "Network error",
+      });
     } finally {
       setLoggingOut(false);
     }

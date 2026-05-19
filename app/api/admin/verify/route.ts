@@ -4,6 +4,7 @@ import { eq, inArray } from "drizzle-orm";
 
 import { getCurrentAdmin } from "@/lib/auth-server";
 import { db } from "@/lib/db";
+import { sendVerifiedEmail, sendFlaggedEmail } from "@/lib/admin/email";
 import { auditLog, techniciansSurvey } from "@/lib/schema";
 import { SUBMISSION_STATUSES } from "@/lib/constants/challenges";
 
@@ -63,6 +64,18 @@ export async function POST(request: NextRequest) {
       updateData.notes = reason;
     }
 
+    // Fetch the current rows before updating so we can send emails
+    const rowsBefore = await db
+      .select({
+        id: techniciansSurvey.id,
+        firstName: techniciansSurvey.firstName,
+        surname: techniciansSurvey.surname,
+        email: techniciansSurvey.email,
+        consentToPublicRegistry: techniciansSurvey.consentToPublicRegistry,
+      })
+      .from(techniciansSurvey)
+      .where(inArray(techniciansSurvey.id, ids));
+
     const updatedRows = await db
       .update(techniciansSurvey)
       .set(updateData)
@@ -83,6 +96,32 @@ export async function POST(request: NextRequest) {
           },
         })),
       );
+    }
+
+    // Send notification emails asynchronously — don't block the response
+    if (action === "verify" || action === "flag") {
+      for (const row of rowsBefore) {
+        if (!row.email) continue;
+        if (action === "verify") {
+          sendVerifiedEmail(
+            row.email,
+            row.firstName,
+            row.surname,
+            row.consentToPublicRegistry,
+          ).then((r) => {
+            if (!r.ok) console.warn(`[verify] Failed to notify ${row.email}: ${r.error}`);
+          });
+        } else if (action === "flag") {
+          sendFlaggedEmail(
+            row.email,
+            row.firstName,
+            row.surname,
+            reason,
+          ).then((r) => {
+            if (!r.ok) console.warn(`[verify] Failed to notify ${row.email}: ${r.error}`);
+          });
+        }
+      }
     }
 
     return NextResponse.json({ updated: updatedRows.length });

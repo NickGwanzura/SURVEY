@@ -91,9 +91,10 @@ export function SimplePieChart({ data, height = 280, emptyMessage = "No data ava
           innerRadius={0}
           outerRadius="80%"
           paddingAngle={1.5}
-          label={({ percent }: { percent: number }) =>
-            percent > 0.05 ? `${(percent * 100).toFixed(0)}%` : ""
-          }
+          label={({ value }: { value: number }) => {
+            const pct = total > 0 ? (value / total) * 100 : 0;
+            return pct > 5 ? `${pct.toFixed(1)}%` : "";
+          }}
           labelLine={{ stroke: "#94a3b8", strokeWidth: 1 }}
           isAnimationActive={true}
           animationDuration={800}
