@@ -3,6 +3,7 @@ import { getCurrentAdmin } from "@/lib/auth-server";
 import { getToolsNeedsData } from "@/lib/admin/reports-data";
 import { ReportTable } from "@/components/admin/reports/ReportTable";
 import { ExportReportButton } from "@/components/admin/reports/ExportReportButton";
+import { AiReportPanel } from "@/components/admin/AiReportPanel";
 
 export const dynamic = "force-dynamic";
 
@@ -40,6 +41,13 @@ export default async function ToolsEquipmentNeedsPage() {
           <ReportTable title="PPE Access" data={data.ppe} />
         </div>
       </div>
+
+      <AiReportPanel
+        reportType="tools-needs"
+        reportLabel="Tools & Equipment Needs"
+        data={data as unknown as Record<string, Array<{ label: string; count: number }>>}
+        sampleSize={data.tools.reduce((s, r) => s + r.count, 0)}
+      />
     </div>
   );
 }

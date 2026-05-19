@@ -13,7 +13,6 @@ import {
 } from "@/components/admin/responses/ResponseDetailSection";
 import { AdminActionPanel } from "@/components/admin/responses/AdminActionPanel";
 import { PhotoModal } from "@/components/admin/responses/PhotoModal";
-import { AiAnalysisPanel } from "@/components/admin/responses/AiAnalysisPanel";
 import {
   GENDER_LABELS,
   AGE_GROUP_LABELS,
@@ -415,8 +414,7 @@ export default async function ResponseDetailPage({ params }: PageProps) {
 
         {/* Right column — admin actions (sticky on large screens) */}
         <div className="w-full lg:sticky lg:top-8 lg:w-72 lg:shrink-0">
-          <AiAnalysisPanel surveyId={survey.id} />
-          <div className="mt-4">
+          <div>
             <AdminActionPanel
             surveyId={survey.id}
             currentStatus={survey.status as SubmissionStatus}

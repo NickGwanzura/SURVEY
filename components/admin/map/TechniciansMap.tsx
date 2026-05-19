@@ -47,12 +47,13 @@ function escapeHtml(str: string): string {
     .replace(/'/g, "&#039;");
 }
 
-// Status → Tailwind colour mapping for DivIcon
+// Status → colour mapping for DivIcon
+// Matches the StatusBadge semantic tones used elsewhere in the admin.
 const STATUS_COLORS: Record<SubmissionStatus, string> = {
-  pending: "#f59e0b",  // amber-500
-  verified: "#10b981", // emerald-500
-  flagged: "#ef4444",  // red-500
-  duplicate: "#94a3b8", // slate-400
+  pending: "#3b82f6",  // blue-500 — awaiting review, neutral
+  verified: "#10b981", // emerald-500 — confirmed, good
+  flagged: "#f59e0b",  // amber-500 — needs attention
+  duplicate: "#64748b", // slate-500 — informational, not actionable
 };
 
 function makeIcon(status: SubmissionStatus) {

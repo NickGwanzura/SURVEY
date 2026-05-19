@@ -29,6 +29,7 @@ export type TechniciansDirectoryRow = {
   province: string;
   hasCertification: string;
   hevacrazMemberNumber: string | null;
+  profilePhotoUrl: string | null;
   submittedAt: Date | string;
 };
 
@@ -80,6 +81,7 @@ export async function listRegisteredTechniciansDirectory(
         province: techniciansSurvey.province,
         hasCertification: techniciansSurvey.hasCertification,
         hevacrazMemberNumber: techniciansSurvey.hevacrazMemberNumber,
+        profilePhotoUrl: techniciansSurvey.profilePhotoUrl,
         submittedAt: techniciansSurvey.submittedAt,
       })
       .from(techniciansSurvey)

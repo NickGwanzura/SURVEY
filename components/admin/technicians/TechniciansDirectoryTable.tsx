@@ -5,6 +5,7 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Pagination } from "@/components/admin/Pagination";
 import { EmptyState } from "@/components/admin/EmptyState";
 import { Badge } from "@/components/admin/Badge";
+import { PhotoModal } from "@/components/admin/responses/PhotoModal";
 import type { TechniciansDirectoryRow } from "@/lib/admin/technicians-directory-data";
 import { cn } from "@/lib/cn";
 
@@ -68,6 +69,7 @@ export function TechniciansDirectoryTable({ rows, total, page, pageSize }: Props
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
+                <th className="w-14 px-4 py-3 text-center">Photo</th>
                 <th className="px-4 py-3">Name</th>
                 <th className="px-4 py-3">Surname</th>
                 <th className="px-4 py-3">Email</th>
@@ -80,6 +82,15 @@ export function TechniciansDirectoryTable({ rows, total, page, pageSize }: Props
             <tbody className="divide-y divide-slate-100">
               {rows.map((row) => (
                 <tr key={row.id} className="hover:bg-slate-50">
+                  <td className="px-4 py-3 text-center">
+                    {row.profilePhotoUrl ? (
+                      <PhotoModal src={row.profilePhotoUrl} alt={`${row.firstName} ${row.surname}`} size="sm" />
+                    ) : (
+                      <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-400">
+                        {row.firstName.charAt(0).toUpperCase()}
+                      </span>
+                    )}
+                  </td>
                   <td className="px-4 py-3 font-medium text-slate-900">
                     {row.firstName}
                   </td>

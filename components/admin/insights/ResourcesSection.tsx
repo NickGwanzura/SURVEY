@@ -87,7 +87,16 @@ export function ResourcesSection({
       </SectionCard>
 
       {/* Access means */}
-      <SectionCard title="Mean Access Score (1–5, higher is better)">
+      <SectionCard title="Mean Access Score (1–5 Likert scale)">
+        <div className="mb-3 rounded-lg border border-cyan-100 bg-cyan-50/50 px-3 py-2 text-xs text-cyan-800">
+          <p className="font-medium">What this measures</p>
+          <p className="mt-0.5 leading-relaxed">
+            Technicians rated their access to tools, spare parts, and low-GWP
+            refrigerants on a 1–5 scale (1 = no access, 5 = full access). The
+            chart below shows the national average for each category. A higher
+            score means better access on average.
+          </p>
+        </div>
         <SimpleBarChart
           data={accessData}
           dataKey="count"

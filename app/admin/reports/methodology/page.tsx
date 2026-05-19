@@ -3,6 +3,7 @@ import { getCurrentAdmin } from "@/lib/auth-server";
 import { getMethodologyData } from "@/lib/admin/reports-data";
 import { ReportTable } from "@/components/admin/reports/ReportTable";
 import { ExportReportButton } from "@/components/admin/reports/ExportReportButton";
+import { AiReportPanel } from "@/components/admin/AiReportPanel";
 
 export const dynamic = "force-dynamic";
 
@@ -37,6 +38,13 @@ export default async function MethodologyReportPage() {
         <ReportTable title="Education Level" data={data.educationLevel} />
         <ReportTable title="Years of Experience" data={data.yearsExperience} />
       </div>
+
+      <AiReportPanel
+        reportType="methodology"
+        reportLabel="Methodology & Readiness Report"
+        data={data as unknown as Record<string, Array<{ label: string; count: number }>>}
+        sampleSize={data.ageGroup.reduce((s, r) => s + r.count, 0)}
+      />
     </div>
   );
 }

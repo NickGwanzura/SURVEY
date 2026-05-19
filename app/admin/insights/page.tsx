@@ -8,6 +8,7 @@ import { SkillsSection } from "@/components/admin/insights/SkillsSection";
 import { ResourcesSection } from "@/components/admin/insights/ResourcesSection";
 import { ChallengesSection } from "@/components/admin/insights/ChallengesSection";
 import { EnergySection } from "@/components/admin/insights/EnergySection";
+import { AiInsightPanel } from "@/components/admin/AiInsightPanel";
 
 export const dynamic = "force-dynamic";
 
@@ -53,6 +54,7 @@ export default async function InsightsPage() {
       ) : (
         <>
           <SummaryStatsBar insights={insights} />
+          <AiInsightPanel />
           <SkillsSection {...insights.skills} />
           <ResourcesSection {...insights.resources} />
           <ChallengesSection {...insights.challenges} />

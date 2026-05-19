@@ -80,6 +80,60 @@ export type InsightSummary = {
  * Generate a natural-language summary/overview of the insights data.
  * Useful for the admin insights page or report exports.
  */
+/**
+ * Analyze report-specific data and generate a structured assessment.
+ * Useful for the admin report pages and report exports.
+ */
+export async function analyzeReportData(
+  reportType: string,
+  sampleSize: number,
+  dataSummary: Record<string, unknown>,
+): Promise<InsightSummary> {
+  const groq = getGroq();
+
+  const prompt = `You are an AI data analyst for the NOU and HEVACRAZ RAC Technician Registry in Zimbabwe.
+Analyse the following report data and produce a concise summary with key findings and recommendations.
+
+Report type: ${reportType}
+Sample size: ${sampleSize.toLocaleString()}
+
+Data summary (JSON):
+\`\`\`json
+${JSON.stringify(dataSummary, null, 2)}
+\`\`\`
+
+Respond with a JSON object containing exactly three fields:
+1. "overview" — a 2-3 sentence plain-text overview of what the data shows for this report.
+2. "keyFindings" — an array of 2-4 key findings, each a short phrase or sentence.
+3. "recommendations" — an array of 2-3 actionable recommendations for NOU/HEVACRAZ.
+
+Return ONLY valid JSON, no markdown formatting.`;
+
+  const completion = await groq.chat.completions.create({
+    model: ANALYSIS_MODEL,
+    messages: [{ role: "user", content: prompt }],
+    temperature: 0.1,
+    response_format: { type: "json_object" },
+  });
+
+  const text = completion.choices[0]?.message?.content ?? "{}";
+
+  try {
+    const parsed = JSON.parse(text) as Partial<InsightSummary>;
+    return {
+      overview: parsed.overview ?? "No analysis available.",
+      keyFindings: parsed.keyFindings ?? [],
+      recommendations: parsed.recommendations ?? [],
+    };
+  } catch {
+    return {
+      overview: "Failed to parse AI response.",
+      keyFindings: [],
+      recommendations: [],
+    };
+  }
+}
+
 export async function generateInsightSummary(
   sampleSize: number,
   dataSummary: Record<string, unknown>,

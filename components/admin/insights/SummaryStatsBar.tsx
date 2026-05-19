@@ -202,7 +202,7 @@ export function SummaryStatsBar({ insights }: { insights: InsightsData }) {
       <StatCard
         label="Avg Access Score"
         value={avgAccess.toFixed(2)}
-        sublabel="out of 5"
+        sublabel="Tools, parts &amp; refrigerants (1–5)"
         highlight={avgAccess >= 3 ? "positive" : "warning"}
         icon={<WrenchIcon />}
       />

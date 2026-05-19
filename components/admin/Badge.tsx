@@ -24,6 +24,13 @@ const toneClasses: Record<NonNullable<BadgeProps["tone"]>, string> = {
   brand: "bg-brand-100 text-brand-700",
 };
 
+const BADGE_STATUS_TONES: Record<SubmissionStatus, BadgeProps["tone"]> = {
+  pending: "info",
+  verified: "success",
+  flagged: "warning",
+  duplicate: "neutral",
+} as const;
+
 export function Badge({ children, tone = "neutral", className }: BadgeProps) {
   return (
     <span
@@ -39,14 +46,9 @@ export function Badge({ children, tone = "neutral", className }: BadgeProps) {
 }
 
 export function StatusBadge({ status }: { status: SubmissionStatus }) {
-  switch (status) {
-    case "verified":
-      return <Badge tone="success">Verified</Badge>;
-    case "pending":
-      return <Badge tone="warning">Pending</Badge>;
-    case "flagged":
-      return <Badge tone="danger">Flagged</Badge>;
-    case "duplicate":
-      return <Badge tone="neutral">Duplicate</Badge>;
-  }
+  return (
+    <Badge tone={BADGE_STATUS_TONES[status]}>
+      {status.charAt(0).toUpperCase() + status.slice(1)}
+    </Badge>
+  );
 }

@@ -5,19 +5,25 @@ import Image from "next/image";
 
 import { Modal } from "@/components/ui/Modal";
 
+const SIZE_MAP = {
+  sm: "h-10 w-10 rounded-full",
+  md: "h-20 w-20 rounded-xl",
+} as const;
+
 type Props = {
   src: string;
   alt: string;
+  size?: keyof typeof SIZE_MAP;
 };
 
-export function PhotoModal({ src, alt }: Props) {
+export function PhotoModal({ src, alt, size = "md" }: Props) {
   const [open, setOpen] = useState(false);
 
   return (
     <>
       <button
         type="button"
-        className="group relative h-20 w-20 overflow-hidden rounded-xl border border-slate-200 shadow-sm focus-visible:outline-2 focus-visible:outline-brand-600"
+        className={`group relative overflow-hidden border border-slate-200 shadow-sm focus-visible:outline-2 focus-visible:outline-brand-600 ${SIZE_MAP[size]}`}
         aria-label={`Open ${alt} full size`}
         onClick={() => setOpen(true)}
       >

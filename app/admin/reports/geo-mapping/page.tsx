@@ -3,6 +3,7 @@ import { getCurrentAdmin } from "@/lib/auth-server";
 import { getGeoMappingData } from "@/lib/admin/reports-data";
 import { ReportTable } from "@/components/admin/reports/ReportTable";
 import { ExportReportButton } from "@/components/admin/reports/ExportReportButton";
+import { AiReportPanel } from "@/components/admin/AiReportPanel";
 
 export const dynamic = "force-dynamic";
 
@@ -35,6 +36,13 @@ export default async function GeoMappingPage() {
         <ReportTable title="Submissions by Province" data={data.provinces} />
         <ReportTable title="Submissions by City" data={data.cities} />
       </div>
+
+      <AiReportPanel
+        reportType="geo-mapping"
+        reportLabel="Geo Mapping"
+        data={data as unknown as Record<string, Array<{ label: string; count: number }>>}
+        sampleSize={data.provinces.reduce((s, r) => s + r.count, 0)}
+      />
     </div>
   );
 }
