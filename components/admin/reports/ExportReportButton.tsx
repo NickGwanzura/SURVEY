@@ -37,7 +37,7 @@ export function ExportReportButton({ report, filename }: ExportReportButtonProps
   };
 
   return (
-    <Button variant="outline" size="sm" onClick={handleExport} loading={loading}>
+    <Button variant="secondary" size="sm" onClick={handleExport} loading={loading}>
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden className="mr-1.5">
         <path d="M9 2v9M6 8l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
         <path d="M3 12v3a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />

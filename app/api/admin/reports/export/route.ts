@@ -62,12 +62,12 @@ export async function GET(request: NextRequest) {
       status: 200,
       headers: {
         "Content-Type": "text/csv; charset=utf-8",
-        "Content-Disposition": \`attachment; filename="\${filename}"\`,
+        "Content-Disposition": `attachment; filename="${filename}"`,
       },
     });
 
   } catch (error) {
-    console.error(\`Failed to generate export for \${reportType}:\`, error);
+    console.error(`Failed to generate export for ${reportType}:`, error);
     return NextResponse.json({ error: "Failed to generate export" }, { status: 500 });
   }
 }
