@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import Link from "next/link";
 
 import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
@@ -109,6 +110,15 @@ export default function AdminLoginPage() {
                 placeholder="••••••••"
               />
             </Field>
+
+            <div className="-mt-2 text-right">
+              <Link
+                href="/admin/forgot-password"
+                className="text-xs font-medium text-brand-600 hover:underline"
+              >
+                Forgot password?
+              </Link>
+            </div>
 
             {error ? (
               <div

@@ -10,6 +10,7 @@ import {
 } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { adminUsers } from "@/lib/schema";
+import { logSystemEvent } from "@/lib/admin/system-events";
 
 export const runtime = "nodejs";
 
@@ -18,13 +19,60 @@ const loginSchema = z.object({
   password: z.string().min(1),
 });
 
+// ─── In-memory rate limiter ──────────────────────────────────────────────────
+// Note: in serverless environments each instance has its own map, so this is
+// defense-in-depth rather than a hard guarantee. For stricter enforcement add
+// an external store (Upstash Redis, etc.).
+
+const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+const RATE_LIMIT_MAX_ATTEMPTS = 10;
+
+const attemptStore = new Map<string, { count: number; resetAt: number }>();
+
+function checkRateLimit(key: string): { allowed: boolean; retryAfter: number } {
+  const now = Date.now();
+  const entry = attemptStore.get(key);
+
+  if (!entry || now > entry.resetAt) {
+    attemptStore.set(key, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return { allowed: true, retryAfter: 0 };
+  }
+
+  entry.count += 1;
+
+  if (entry.count > RATE_LIMIT_MAX_ATTEMPTS) {
+    const retryAfter = Math.ceil((entry.resetAt - now) / 1000);
+    return { allowed: false, retryAfter };
+  }
+
+  return { allowed: true, retryAfter: 0 };
+}
+
+// ─── IP helpers ──────────────────────────────────────────────────────────────
+
 function getClientIp(req: NextRequest): string | null {
   const forwarded = req.headers.get("x-forwarded-for");
   if (forwarded) return forwarded.split(",")[0].trim();
   return req.headers.get("x-real-ip");
 }
 
+// ─── POST handler ────────────────────────────────────────────────────────────
+
 export async function POST(req: NextRequest) {
+  // Rate-limit by IP
+  const ip = getClientIp(req) ?? "unknown";
+  const { allowed, retryAfter } = checkRateLimit(ip);
+
+  if (!allowed) {
+    return NextResponse.json(
+      { error: `Too many attempts. Try again in ${retryAfter} seconds.` },
+      {
+        status: 429,
+        headers: { "Retry-After": String(retryAfter) },
+      },
+    );
+  }
+
   let body: unknown;
   try {
     body = await req.json();
@@ -63,7 +111,7 @@ export async function POST(req: NextRequest) {
 
   const session = await createSession({
     adminUserId: user.id,
-    ipAddress: getClientIp(req),
+    ipAddress: ip,
     userAgent: req.headers.get("user-agent"),
   });
 
@@ -71,6 +119,14 @@ export async function POST(req: NextRequest) {
     .update(adminUsers)
     .set({ lastLoginAt: new Date() })
     .where(eq(adminUsers.id, user.id));
+
+  // Log the login event (fire-and-forget)
+  logSystemEvent({
+    actorAdminUserId: user.id,
+    eventType: "admin.login",
+    description: `Admin login: ${user.email}`,
+    ipAddress: ip,
+  }).catch((err) => console.error("[login] logSystemEvent failed:", err));
 
   const res = NextResponse.json({
     user: {

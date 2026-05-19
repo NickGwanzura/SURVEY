@@ -12,6 +12,32 @@ const analyzeSchema = z.object({
   surveyId: z.string().uuid(),
 });
 
+/** Strip personally identifiable information before sending data to an external AI API. */
+function stripPiiFromSurvey(survey: typeof techniciansSurvey.$inferSelect): Record<string, unknown> {
+  return {
+    gender: survey.gender,
+    ageGroup: survey.ageGroup,
+    educationLevel: survey.educationLevel,
+    yearsExperience: survey.yearsExperience,
+    mainWorkFocus: survey.mainWorkFocus,
+    province: survey.province,
+    hasFormalTraining: survey.hasFormalTraining,
+    hasCertification: survey.hasCertification,
+    certificationsHeld: survey.certificationsHeld,
+    confidenceTraditionalRefrigerants: survey.confidenceTraditionalRefrigerants,
+    confidenceLowGwpRefrigerants: survey.confidenceLowGwpRefrigerants,
+    accessToTools: survey.accessToTools,
+    accessToSpareParts: survey.accessToSpareParts,
+    biggestDailyChallenge: survey.biggestDailyChallenge,
+    loadSheddingFrequency: survey.loadSheddingFrequency,
+    refrigerantRecoveryEquipmentUse: survey.refrigerantRecoveryEquipmentUse,
+    ppeAccess: survey.ppeAccess,
+    installsEnergyEfficient: survey.installsEnergyEfficient,
+    status: survey.status,
+    consentToContact: survey.consentToContact,
+  };
+}
+
 export async function POST(request: NextRequest) {
   const admin = await getCurrentAdmin();
   if (!admin) {
@@ -55,35 +81,8 @@ export async function POST(request: NextRequest) {
 
     const survey = rows[0];
 
-    // Build a clean data object for the AI
-    const cleanData: Record<string, unknown> = {
-      firstName: survey.firstName,
-      surname: survey.surname,
-      gender: survey.gender,
-      ageGroup: survey.ageGroup,
-      educationLevel: survey.educationLevel,
-      yearsExperience: survey.yearsExperience,
-      mainWorkFocus: survey.mainWorkFocus,
-      province: survey.province,
-      city: survey.city,
-      phone: survey.phone,
-      email: survey.email,
-      hasFormalTraining: survey.hasFormalTraining,
-      hasCertification: survey.hasCertification,
-      certificationsHeld: survey.certificationsHeld,
-      hevacrazMemberNumber: survey.hevacrazMemberNumber,
-      confidenceTraditionalRefrigerants: survey.confidenceTraditionalRefrigerants,
-      confidenceLowGwpRefrigerants: survey.confidenceLowGwpRefrigerants,
-      accessToTools: survey.accessToTools,
-      accessToSpareParts: survey.accessToSpareParts,
-      biggestDailyChallenge: survey.biggestDailyChallenge,
-      loadSheddingFrequency: survey.loadSheddingFrequency,
-      refrigerantRecoveryEquipmentUse: survey.refrigerantRecoveryEquipmentUse,
-      ppeAccess: survey.ppeAccess,
-      installsEnergyEfficient: survey.installsEnergyEfficient,
-      status: survey.status,
-      consentToContact: survey.consentToContact,
-    };
+    // Strip PII before sending to external AI API
+    const cleanData = stripPiiFromSurvey(survey);
 
     const result = await analyzeSubmission(cleanData);
     return NextResponse.json(result);

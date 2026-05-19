@@ -315,7 +315,52 @@ export type AdminUser = typeof adminUsers.$inferSelect;
 export type NewAdminUser = typeof adminUsers.$inferInsert;
 export type AdminSession = typeof adminSessions.$inferSelect;
 export type NewAdminSession = typeof adminSessions.$inferInsert;
+export const passwordResetTokens = pgTable(
+  "password_reset_tokens",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    adminUserId: uuid("admin_user_id")
+      .notNull()
+      .references(() => adminUsers.id, { onDelete: "cascade" }),
+    tokenHash: text("token_hash").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    usedAt: timestamp("used_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    adminUserIdx: index("password_reset_tokens_admin_user_idx").on(table.adminUserId),
+    tokenHashIdx: index("password_reset_tokens_token_hash_idx").on(table.tokenHash),
+  }),
+);
+
+export const systemEvents = pgTable(
+  "system_events",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    actorAdminUserId: uuid("actor_admin_user_id")
+      .references(() => adminUsers.id, { onDelete: "set null" }),
+    eventType: text("event_type").notNull(),
+    description: text("description").notNull(),
+    metadata: jsonb("metadata"),
+    ipAddress: text("ip_address"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    eventTypeIdx: index("system_events_event_type_idx").on(table.eventType),
+    actorIdx: index("system_events_actor_idx").on(table.actorAdminUserId),
+    createdAtIdx: index("system_events_created_at_idx").on(table.createdAt),
+  }),
+);
+
 export type SurveyEvent = typeof surveyEvents.$inferSelect;
 export type NewSurveyEvent = typeof surveyEvents.$inferInsert;
+export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
+export type NewPasswordResetToken = typeof passwordResetTokens.$inferInsert;
+export type SystemEvent = typeof systemEvents.$inferSelect;
+export type NewSystemEvent = typeof systemEvents.$inferInsert;
 
 export const _likertCheckSql = sql`/* Likert checks applied via SQL CHECK constraints in migration */`;

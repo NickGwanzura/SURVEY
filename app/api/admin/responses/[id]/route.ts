@@ -10,6 +10,7 @@ import {
   patchResponseSchema,
 } from "@/lib/admin/responses-data";
 import { sendFlaggedEmail, sendVerifiedEmail } from "@/lib/admin/email";
+import { logSystemEvent } from "@/lib/admin/system-events";
 
 const idSchema = z.string().uuid();
 
@@ -135,7 +136,7 @@ export async function PATCH(
       });
     }
 
-    // Send notification email when status changes to verified or flagged
+    // Send notification email + log system event when status changes
     if (updates.status === "verified" && before.email) {
       sendVerifiedEmail(
         before.email,
@@ -145,6 +146,12 @@ export async function PATCH(
       ).then((r) => {
         if (!r.ok) console.warn(`[PATCH] Failed to notify ${before.email}: ${r.error}`);
       });
+      logSystemEvent({
+        actorAdminUserId: admin.user.id,
+        eventType: "survey.verified",
+        description: `Survey ${id} verified — ${before.firstName} ${before.surname}`,
+        metadata: { surveyId: id, email: before.email },
+      }).catch((err) => console.error("[PATCH] logSystemEvent failed:", err));
     } else if (updates.status === "flagged" && before.email) {
       sendFlaggedEmail(
         before.email,
@@ -154,6 +161,12 @@ export async function PATCH(
       ).then((r) => {
         if (!r.ok) console.warn(`[PATCH] Failed to notify ${before.email}: ${r.error}`);
       });
+      logSystemEvent({
+        actorAdminUserId: admin.user.id,
+        eventType: "survey.flagged",
+        description: `Survey ${id} flagged — ${before.firstName} ${before.surname}`,
+        metadata: { surveyId: id, reason: updates.flagReason },
+      }).catch((err) => console.error("[PATCH] logSystemEvent failed:", err));
     }
 
     return NextResponse.json(updated);
@@ -212,6 +225,13 @@ export async function DELETE(
         submittedAt: survey.submittedAt,
       },
     });
+
+    logSystemEvent({
+      actorAdminUserId: admin.user.id,
+      eventType: "survey.deleted",
+      description: `Survey ${id} deleted — ${survey.firstName} ${survey.surname}`,
+      metadata: { surveyId: id, status: survey.status, submittedAt: survey.submittedAt.toISOString() },
+    }).catch((err) => console.error("[DELETE] logSystemEvent failed:", err));
 
     await db.delete(techniciansSurvey).where(eq(techniciansSurvey.id, id));
 

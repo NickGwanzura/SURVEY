@@ -6,7 +6,7 @@ import { adminSessions, adminUsers } from "./schema";
 import type { AdminUser } from "./schema";
 
 const COOKIE_NAME = process.env.AUTH_COOKIE_NAME ?? "zw_rac_admin";
-const SESSION_TTL_HOURS = Number(process.env.AUTH_SESSION_TTL_HOURS ?? "12");
+const SESSION_TTL_HOURS = Number(process.env.AUTH_SESSION_TTL_HOURS ?? "4");
 
 const encodedSecret = (() => {
   const raw = process.env.AUTH_SECRET;

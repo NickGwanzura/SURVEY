@@ -38,22 +38,12 @@ export type MapMarker = {
 const ZIMBABWE_CENTER: [number, number] = [-19.015, 29.155];
 const INITIAL_ZOOM = 6;
 
-function escapeHtml(str: string): string {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
-
 // Status → colour mapping for DivIcon
-// Matches the StatusBadge semantic tones used elsewhere in the admin.
 const STATUS_COLORS: Record<SubmissionStatus, string> = {
-  pending: "#3b82f6",  // blue-500 — awaiting review, neutral
-  verified: "#10b981", // emerald-500 — confirmed, good
-  flagged: "#f59e0b",  // amber-500 — needs attention
-  duplicate: "#64748b", // slate-500 — informational, not actionable
+  pending: "#3b82f6",  // blue-500
+  verified: "#10b981", // emerald-500
+  flagged: "#f59e0b",  // amber-500
+  duplicate: "#64748b", // slate-500
 };
 
 function makeIcon(status: SubmissionStatus) {
@@ -101,6 +91,51 @@ function HeatmapLayer({ points }: { points: HeatPoint[] }) {
   return null;
 }
 
+// ─── Marker popup content (React DOM — no dangerouslySetInnerHTML) ───────────
+
+function MarkerPopupContent({ marker }: { marker: MapMarker }) {
+  const certLabel = HAS_CERTIFICATION_LABELS[marker.hasCertification];
+  const focusLabel =
+    marker.mainWorkFocus.length === 0
+      ? "—"
+      : marker.mainWorkFocus
+          .map((f) => MAIN_WORK_FOCUS_LABELS[f] ?? f)
+          .join(", ");
+  const yearsLabel = YEARS_EXPERIENCE_LABELS[marker.yearsExperience];
+  const statusColor = STATUS_COLORS[marker.status];
+
+  return (
+    <div style={{ minWidth: 180, fontFamily: "sans-serif", fontSize: 13, lineHeight: 1.5 }}>
+      <p style={{ fontWeight: 600, margin: "0 0 4px" }}>
+        {marker.firstName} {marker.surname}
+      </p>
+      <p style={{ margin: 0, color: "#555" }}>{PROVINCE_LABELS[marker.province]}</p>
+      <p style={{ margin: "2px 0", color: "#555" }}>{focusLabel}</p>
+      <p style={{ margin: "2px 0", color: "#555" }}>Experience: {yearsLabel}</p>
+      <span
+        style={{
+          display: "inline-block",
+          padding: "2px 8px",
+          borderRadius: 999,
+          background: `${statusColor}22`,
+          color: statusColor,
+          border: `1px solid ${statusColor}66`,
+          fontSize: 11,
+          fontWeight: 600,
+          marginTop: 4,
+          textTransform: "capitalize",
+        }}
+      >
+        {marker.status}
+      </span>
+      <br />
+      <span style={{ fontSize: 11, color: "#777", display: "inline-block", marginTop: 4 }}>
+        Certification: {certLabel}
+      </span>
+    </div>
+  );
+}
+
 // ─── Marker layer ─────────────────────────────────────────────────────────────
 
 function MarkersLayer({ markers }: { markers: MapMarker[] }) {
@@ -108,64 +143,15 @@ function MarkersLayer({ markers }: { markers: MapMarker[] }) {
     <MarkerClusterGroup chunkedLoading>
       {markers.map((m) => {
         const icon = makeIcon(m.status);
-        const certLabel = HAS_CERTIFICATION_LABELS[m.hasCertification];
-        const focusLabel =
-          m.mainWorkFocus.length === 0
-            ? "—"
-            : m.mainWorkFocus
-                .map((f) => MAIN_WORK_FOCUS_LABELS[f] ?? f)
-                .join(", ");
-        const yearsLabel = YEARS_EXPERIENCE_LABELS[m.yearsExperience];
-        const statusColor = STATUS_COLORS[m.status];
-
-        const popupHtml = `
-          <div style="min-width:180px;font-family:sans-serif;font-size:13px;line-height:1.5">
-            <p style="font-weight:600;margin:0 0 4px">${escapeHtml(m.firstName)} ${escapeHtml(m.surname)}</p>
-            <p style="margin:0;color:#555">${escapeHtml(PROVINCE_LABELS[m.province])}</p>
-            <p style="margin:2px 0;color:#555">${escapeHtml(focusLabel)}</p>
-            <p style="margin:2px 0;color:#555">Experience: ${escapeHtml(yearsLabel)}</p>
-            <span style="
-              display:inline-block;padding:2px 8px;border-radius:999px;
-              background:${statusColor}22;color:${statusColor};
-              border:1px solid ${statusColor}66;font-size:11px;font-weight:600;
-              margin-top:4px;text-transform:capitalize
-            ">${m.status}</span>
-            <br/>
-            <span style="font-size:11px;color:#777;display:inline-block;margin-top:4px">
-              Certification: ${escapeHtml(certLabel)}
-            </span>
-          </div>
-        `;
-
         return (
-          <MarkerWithPopup
-            key={m.id}
-            position={[m.lat, m.lng]}
-            icon={icon}
-            popupHtml={popupHtml}
-          />
+          <Marker key={m.id} position={[m.lat, m.lng]} icon={icon}>
+            <Popup>
+              <MarkerPopupContent marker={m} />
+            </Popup>
+          </Marker>
         );
       })}
     </MarkerClusterGroup>
-  );
-}
-
-// Separate component to avoid hook-in-loop
-function MarkerWithPopup({
-  position,
-  icon,
-  popupHtml,
-}: {
-  position: [number, number];
-  icon: L.DivIcon;
-  popupHtml: string;
-}) {
-  return (
-    <Marker position={position} icon={icon}>
-      <Popup>
-        <div dangerouslySetInnerHTML={{ __html: popupHtml }} />
-      </Popup>
-    </Marker>
   );
 }
 
@@ -247,7 +233,6 @@ export function TechniciansMap({ markers }: TechniciansMapProps) {
       a.click();
       URL.revokeObjectURL(url);
     } catch {
-      // Inline error: silent fail with console
       console.error("GeoJSON export failed");
     } finally {
       setExporting(false);

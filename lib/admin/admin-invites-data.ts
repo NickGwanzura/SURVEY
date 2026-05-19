@@ -3,10 +3,10 @@ import "server-only";
 import { SignJWT, jwtVerify } from "jose";
 
 const INVITE_SECRET = (() => {
-  // Re-use the AUTH_SECRET for invite tokens
-  const raw = process.env.AUTH_SECRET;
+  // Use a dedicated AUTH_INVITE_SECRET if set, otherwise fall back to AUTH_SECRET
+  const raw = process.env.AUTH_INVITE_SECRET ?? process.env.AUTH_SECRET;
   if (!raw) {
-    throw new Error("AUTH_SECRET is not set. Add it to .env.local.");
+    throw new Error("AUTH_SECRET (or AUTH_INVITE_SECRET) is not set. Add it to .env.local.");
   }
   return new TextEncoder().encode(raw);
 })();

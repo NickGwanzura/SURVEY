@@ -480,6 +480,82 @@ export async function sendAdminInviteEmail(
 }
 
 /* ------------------------------------------------------------------ */
+/*  Email 5 — Password Reset                                            */
+/* ------------------------------------------------------------------ */
+export function passwordResetEmailHtml(
+  name: string,
+  resetUrl: string,
+): string {
+  const body = `
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+      <tr>
+        <td align="center" style="padding-bottom:20px;">
+          <div style="width:56px;height:56px;border-radius:50%;background:${BRAND_50};text-align:center;line-height:56px;display:inline-block;">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" style="vertical-align:middle;">
+              <path d="M14 2L3 8v12l11 6 11-6V8L14 2z" stroke="${BRAND_500}" stroke-width="2" stroke-linejoin="round"/>
+              <path d="M14 2v14.5M3 8l11 6.5L25 8" stroke="${BRAND_500}" stroke-width="2" stroke-linejoin="round"/>
+              <circle cx="14" cy="16" r="2" fill="${BRAND_500}"/>
+            </svg>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td align="center" style="padding-bottom:8px;">
+          <h1 style="margin:0;font-size:22px;font-weight:700;color:${SLATE_900};">Password Reset</h1>
+        </td>
+      </tr>
+      <tr>
+        <td align="center" style="padding-bottom:24px;">
+          <p style="margin:0;font-size:15px;color:${SLATE_600};line-height:1.6;">
+            Hello <strong>${name}</strong>, a password reset was requested for your RAC Technician Registry admin account.
+          </p>
+        </td>
+      </tr>
+      <tr>
+        <td align="center" style="padding-bottom:24px;">
+          <table role="presentation" cellpadding="0" cellspacing="0">
+            <tr>
+              <td align="center" style="border-radius:8px;background:${BRAND_600};padding:14px 32px;">
+                <a href="${resetUrl}" style="color:${WHITE};font-size:15px;font-weight:600;text-decoration:none;display:inline-block;">
+                  Reset your password
+                </a>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding-bottom:24px;">
+          <p style="margin:0;font-size:14px;color:${SLATE_600};line-height:1.6;">
+            This link expires in <strong>2 hours</strong>. If you did not request a password reset, please ignore this email — no changes have been made to your account.
+          </p>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding-bottom:8px;">
+          <p style="margin:0;font-size:14px;color:${SLATE_600};line-height:1.6;">
+            For security, all existing sessions will be signed out after a successful password change.
+          </p>
+        </td>
+      </tr>
+    </table>
+  `;
+  return emailShell("Password Reset — RAC Technician Registry Admin", body);
+}
+
+export async function sendPasswordResetEmail(
+  to: string,
+  name: string,
+  resetUrl: string,
+): Promise<SendEmailResult> {
+  return sendEmail(
+    [to],
+    "Password Reset — RAC Technician Registry Admin",
+    passwordResetEmailHtml(name, resetUrl),
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /*  Mass / Broadcast Email                                             */
 /* ------------------------------------------------------------------ */
 export async function sendBroadcastEmail(

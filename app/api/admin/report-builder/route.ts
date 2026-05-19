@@ -3,31 +3,6 @@ import { sql } from "drizzle-orm";
 import { getCurrentAdmin } from "@/lib/auth-server";
 import { db } from "@/lib/db";
 
-const ALLOWED_FIELDS = new Set([
-  "firstName",
-  "surname",
-  "phone",
-  "email",
-  "province",
-  "city",
-  "suburb",
-  "gender",
-  "ageGroup",
-  "educationLevel",
-  "yearsExperience",
-  "mainWorkFocus",
-  "hasCertification",
-  "hasFormalTraining",
-  "confidenceTraditionalRefrigerants",
-  "confidenceLowGwpRefrigerants",
-  "status",
-  "submittedAt",
-  "submissionSource",
-  "consentToContact",
-  "consentToPublicRegistry",
-  "installsEnergyEfficient",
-]);
-
 const DB_COLUMN_MAP: Record<string, string> = {
   firstName: "first_name",
   surname: "surname",
@@ -53,10 +28,17 @@ const DB_COLUMN_MAP: Record<string, string> = {
   installsEnergyEfficient: "installs_energy_efficient",
 };
 
+const ALLOWED_FIELDS = new Set(Object.keys(DB_COLUMN_MAP));
+
 // Reverse map: DB column name -> camelCase field key
 const CAMEL_MAP: Record<string, string> = Object.fromEntries(
   Object.entries(DB_COLUMN_MAP).map(([camel, db]) => [db, camel]),
 );
+
+/** Resolve a camelCase field key to its DB column name. Returns null if unknown. */
+function resolveColumn(field: string): string | null {
+  return DB_COLUMN_MAP[field] ?? null;
+}
 
 /** Map snake_case DB row keys to camelCase frontend keys. */
 function mapRowKeys(row: Record<string, unknown>): Record<string, unknown> {
@@ -101,7 +83,10 @@ export async function GET(req: Request) {
       : sql`1 = 1`;
 
     if (groupBy && groupBy !== "none" && ALLOWED_FIELDS.has(groupBy)) {
-      const groupCol = DB_COLUMN_MAP[groupBy] ?? groupBy;
+      const groupCol = resolveColumn(groupBy);
+      if (!groupCol) {
+        return NextResponse.json({ error: "Invalid groupBy field" }, { status: 400 });
+      }
       const query = sql`
         SELECT ${sql.raw(groupCol)} AS "_groupKey", COUNT(*)::int AS count
         FROM technicians_survey
@@ -116,7 +101,7 @@ export async function GET(req: Request) {
       });
     }
 
-    const cols = fields.map((f) => DB_COLUMN_MAP[f] ?? f);
+    const cols = fields.map(resolveColumn).filter((c): c is string => c !== null);
     const selectCols = cols.join(", ");
     const query = sql`
       SELECT ${sql.raw(selectCols)}

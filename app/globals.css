@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme inline {
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-inter);
 
   /* NOU / HEVACRAZ palette */
   --color-brand-50: #ecfdf5;

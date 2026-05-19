@@ -12,6 +12,7 @@ import { HAS_CERTIFICATION_OPTIONS } from "@/lib/constants/refrigerants";
 import { YEARS_EXPERIENCE } from "@/lib/constants/ageGroups";
 import { EDUCATION_LEVELS } from "@/lib/constants/educationLevels";
 
+import { logSystemEvent } from "@/lib/admin/system-events";
 import { csvExporter } from "@/lib/admin/exporters/csv";
 import { excelExporter } from "@/lib/admin/exporters/excel";
 import { pdfExporter } from "@/lib/admin/exporters/pdf";
@@ -172,6 +173,16 @@ export async function POST(request: NextRequest) {
     // Non-fatal — don't fail the export if logging fails
     console.error("[POST /api/admin/export] log insert failed", err);
   }
+
+  // Log system event (fire-and-forget)
+  // Strip the `q` search term from metadata to avoid storing PII (names, phones) in the audit log.
+  const { q: _q, ...safeFilters } = filters;
+  logSystemEvent({
+    actorAdminUserId: admin.user.id,
+    eventType: "export.created",
+    description: `Export created: ${format.toUpperCase()} (${rows.length} rows, ${anonymise ? "anonymised" : "full"})`,
+    metadata: { format, rowCount: rows.length, anonymise, filters: safeFilters, hasQ: !!_q },
+  }).catch((err) => console.error("[export] logSystemEvent failed:", err));
 
   // ─── Return file ──────────────────────────────────────────────────────────
   // Copy Buffer into a plain ArrayBuffer to satisfy Response BodyInit typing

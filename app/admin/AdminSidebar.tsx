@@ -209,6 +209,9 @@ const NAV_ITEMS = [
   { href: "/admin/registry-preview", label: "Registry Preview", Icon: RegistryIcon },
   { href: "/admin/messaging", label: "Message Board", Icon: MessageIcon },
   { href: "/admin/users", label: "Admin Users", Icon: UsersIcon },
+
+  { heading: "System" },
+  { href: "/admin/sysadmin", label: "Sysadmin Dashboard", Icon: RegistryIcon },
 ];
 
 type AdminSidebarProps = {
