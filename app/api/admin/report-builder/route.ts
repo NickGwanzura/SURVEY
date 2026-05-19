@@ -53,6 +53,21 @@ const DB_COLUMN_MAP: Record<string, string> = {
   installsEnergyEfficient: "installs_energy_efficient",
 };
 
+// Reverse map: DB column name -> camelCase field key
+const CAMEL_MAP: Record<string, string> = Object.fromEntries(
+  Object.entries(DB_COLUMN_MAP).map(([camel, db]) => [db, camel]),
+);
+
+/** Map snake_case DB row keys to camelCase frontend keys. */
+function mapRowKeys(row: Record<string, unknown>): Record<string, unknown> {
+  const mapped: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(row)) {
+    const camelKey = CAMEL_MAP[key] ?? key;
+    mapped[camelKey] = value;
+  }
+  return mapped;
+}
+
 const VALID_STATUSES = ["pending", "verified", "flagged", "duplicate"];
 
 export async function GET(req: Request) {
@@ -95,7 +110,10 @@ export async function GET(req: Request) {
         ORDER BY count DESC
       `;
       const result = await db.execute(query);
-      return NextResponse.json({ results: result.rows });
+      return NextResponse.json({
+        results: result.rows.map(mapRowKeys),
+        grouped: true,
+      });
     }
 
     const cols = fields.map((f) => DB_COLUMN_MAP[f] ?? f);
@@ -107,7 +125,10 @@ export async function GET(req: Request) {
       LIMIT 500
     `;
     const result = await db.execute(query);
-    return NextResponse.json({ results: result.rows });
+    return NextResponse.json({
+      results: result.rows.map(mapRowKeys),
+      grouped: false,
+    });
   } catch (err) {
     console.error("[GET /api/admin/report-builder]", err);
     return NextResponse.json(

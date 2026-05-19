@@ -164,6 +164,15 @@ function UsersIcon() {
   );
 }
 
+function DocumentReportIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
+      <path d="M4 2.5a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-8.5l-3.5-3.5H4z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M11 2.5V6h3.5M6 9.5h6M6 12.5h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 const NAV_ITEMS = [
   { href: "/admin/dashboard", label: "Dashboard", Icon: DashboardIcon },
   { href: "/admin/responses", label: "Responses", Icon: ResponsesIcon },
@@ -172,11 +181,21 @@ const NAV_ITEMS = [
   { href: "/admin/insights", label: "Insights", Icon: InsightsIcon },
   { href: "/admin/provinces", label: "Province Comparison", Icon: ComparisonIcon },
   { href: "/admin/comparison", label: "Period Comparison", Icon: PeriodComparisonIcon },
-  { href: "/admin/report-builder", label: "Report Builder", Icon: BuilderIcon },
   { href: "/admin/funnel", label: "Survey Funnel", Icon: FunnelIcon },
   { href: "/admin/export", label: "Export", Icon: ExportIcon },
   { href: "/admin/duplicates", label: "Duplicates", Icon: DuplicateIcon },
   { href: "/admin/coverage", label: "Coverage Gap", Icon: CoverageIcon },
+
+  { heading: "Reports" },
+  { href: "/admin/report-builder", label: "Report Builder", Icon: BuilderIcon },
+  { href: "/admin/reports/methodology", label: "Methodology & Readiness", Icon: DocumentReportIcon },
+  { href: "/admin/reports/skills-gap", label: "Skills Gap Analysis", Icon: DocumentReportIcon },
+  { href: "/admin/reports/tools-needs", label: "Tools & Equipment", Icon: DocumentReportIcon },
+  { href: "/admin/reports/barrier-analysis", label: "Barrier Analysis", Icon: DocumentReportIcon },
+  { href: "/admin/reports/geo-mapping", label: "Geo Mapping", Icon: DocumentReportIcon },
+  { href: "/admin/reports/achievement-gaps", label: "Achievement & Gaps", Icon: DocumentReportIcon },
+
+  { heading: "Settings" },
   { href: "/admin/registry-preview", label: "Registry Preview", Icon: RegistryIcon },
   { href: "/admin/users", label: "Admin Users", Icon: UsersIcon },
 ];
@@ -277,7 +296,16 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
 
         {/* Nav */}
         <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-3 py-4" aria-label="Admin pages">
-          {NAV_ITEMS.map(({ href, label, Icon }) => {
+          {NAV_ITEMS.map((item, idx) => {
+            if ("heading" in item) {
+              return (
+                <div key={`heading-${idx}`} className="mt-4 mb-1 px-3 text-[10px] font-bold uppercase tracking-widest text-sidebar-text-muted">
+                  {item.heading}
+                </div>
+              );
+            }
+
+            const { href, label, Icon } = item;
             const active =
               pathname === href || pathname.startsWith(`${href}/`);
             return (
