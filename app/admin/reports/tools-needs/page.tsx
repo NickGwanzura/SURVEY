@@ -1,0 +1,53 @@
+import { redirect } from "next/navigation";
+import { getCurrentAdmin } from "@/lib/auth-server";
+import { getToolsNeedsData } from "@/lib/admin/reports-data";
+import { ReportTable } from "@/components/admin/reports/ReportTable";
+import { ExportReportButton } from "@/components/admin/reports/ExportReportButton";
+import { AiReportPanel } from "@/components/admin/AiReportPanel";
+
+export const dynamic = "force-dynamic";
+
+export default async function ToolsEquipmentNeedsPage() {
+  const admin = await getCurrentAdmin();
+  if (!admin) redirect("/admin/login");
+
+  const data = await getToolsNeedsData();
+
+  return (
+    <div className="space-y-8">
+      <div className="flex flex-col gap-4 border-b border-slate-200 pb-6 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-widest text-brand-600">
+            Reports
+          </p>
+          <h1 className="mt-1 text-2xl font-semibold text-slate-900">
+            Tools & Equipment Needs
+          </h1>
+          <p className="mt-0.5 text-sm text-slate-500">
+            Assessment of required tools and equipment based on survey data.
+          </p>
+        </div>
+        <div>
+          <ExportReportButton report="tools-needs" filename="Tools_and_Equipment_Needs" />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <ReportTable title="Access to Tools" data={data.tools} />
+        <ReportTable title="Access to Spare Parts" data={data.parts} />
+        <ReportTable title="Access to Low-GWP Refrigerants" data={data.lowGwp} />
+        <ReportTable title="Refrigerant Recovery Equipment Use" data={data.recoveryUse} />
+        <div className="lg:col-span-2">
+          <ReportTable title="PPE Access" data={data.ppe} />
+        </div>
+      </div>
+
+      <AiReportPanel
+        reportType="tools-needs"
+        reportLabel="Tools & Equipment Needs"
+        data={data as unknown as Record<string, Array<{ label: string; count: number }>>}
+        sampleSize={data.tools.reduce((s, r) => s + r.count, 0)}
+      />
+    </div>
+  );
+}

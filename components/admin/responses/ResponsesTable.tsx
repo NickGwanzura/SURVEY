@@ -1,0 +1,324 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
+
+import { Badge, StatusBadge } from "@/components/admin/Badge";
+import { Pagination } from "@/components/admin/Pagination";
+import { EmptyState } from "@/components/admin/EmptyState";
+import { BulkActions } from "@/components/admin/responses/BulkActions";
+import {
+  PROVINCE_LABELS,
+  MAIN_WORK_FOCUS_LABELS,
+  YEARS_EXPERIENCE_LABELS,
+} from "@/lib/admin/labels";
+import type { Province } from "@/lib/constants/provinces";
+import type { MainWorkFocus } from "@/lib/constants/workFocus";
+import type { YearsExperience } from "@/lib/constants/ageGroups";
+import type { SubmissionStatus } from "@/lib/constants/challenges";
+import type { ResponseRow } from "@/lib/admin/responses-data";
+import { cn } from "@/lib/cn";
+
+function maskPhone(phone: string): string {
+  if (phone.length < 4) return "••••";
+  const last4 = phone.slice(-4);
+  return `•••• ${last4}`;
+}
+
+function RelativeTime({ date }: { date: Date | string }) {
+  const [, forceUpdate] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => forceUpdate((n) => n + 1), 60_000);
+    return () => clearInterval(id);
+  }, []);
+
+  const d = typeof date === "string" ? new Date(date) : date;
+  const diff = Date.now() - d.getTime();
+  const seconds = Math.floor(diff / 1000);
+  if (seconds < 60) return "just now";
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 30) return `${days}d ago`;
+  return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+}
+
+function CertBadge({ value }: { value: string }) {
+  if (value === "yes") return <Badge tone="success">Yes</Badge>;
+  if (value === "studying") return <Badge tone="info">Studying</Badge>;
+  return <Badge tone="neutral">No</Badge>;
+}
+
+function WorkFocusSummary({ items }: { items: string[] }) {
+  if (!items || items.length === 0) return <span className="text-slate-400">—</span>;
+  const labels = items.map((f) => MAIN_WORK_FOCUS_LABELS[f as MainWorkFocus] ?? f);
+  if (labels.length <= 2) return <span className="truncate">{labels.join(", ")}</span>;
+  return (
+    <span className="truncate" title={labels.join(", ")}>
+      {labels[0]}, +{labels.length - 1} more
+    </span>
+  );
+}
+
+type Props = {
+  rows: ResponseRow[];
+  total: number;
+  page: number;
+  pageSize: number;
+};
+
+export function ResponsesTable({ rows, total, page, pageSize }: Props) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  const allSelected = rows.length > 0 && rows.every((r) => selectedIds.has(r.id));
+
+  function toggleAll() {
+    if (allSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(rows.map((r) => r.id)));
+    }
+  }
+
+  function toggleRow(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function handlePageChange(newPage: number) {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", String(newPage));
+    router.replace(`${pathname}?${params.toString()}`);
+  }
+
+  const selectedArray = Array.from(selectedIds);
+
+  return (
+    <div className="flex flex-col gap-3">
+      <BulkActions
+        selectedIds={selectedArray}
+        onClearSelection={() => setSelectedIds(new Set())}
+      />
+
+      {rows.length === 0 ? (
+        <EmptyState
+          title="No responses found"
+          description="Try adjusting the filters above to find what you're looking for."
+        />
+      ) : (
+        <>
+          {/* Desktop table — lg and up */}
+          <div className="hidden overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm lg:block">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
+                  <th className="w-10 px-3 py-3">
+                    <input
+                      type="checkbox"
+                      checked={allSelected}
+                      onChange={toggleAll}
+                      aria-label="Select all on this page"
+                      className="rounded border-slate-300"
+                    />
+                  </th>
+                  <th className="px-3 py-3">Applicant</th>
+                  <th className="px-3 py-3">Province</th>
+                  <th className="px-3 py-3">Focus &amp; Exp.</th>
+                  <th className="px-3 py-3">Cert.</th>
+                  <th className="px-3 py-3">Submitted</th>
+                  <th className="px-3 py-3">Status</th>
+                  <th className="sticky right-0 z-10 bg-slate-50 px-3 py-3 text-right shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.08)]">
+                    <span className="sr-only">Actions</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {rows.map((row) => {
+                  const isSelected = selectedIds.has(row.id);
+                  return (
+                    <tr
+                      key={row.id}
+                      className={cn(
+                        "group transition-colors",
+                        isSelected ? "bg-brand-50" : "hover:bg-slate-50",
+                      )}
+                    >
+                      <td className="px-3 py-3">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => toggleRow(row.id)}
+                          aria-label={`Select ${row.firstName} ${row.surname}`}
+                          className="rounded border-slate-300"
+                        />
+                      </td>
+                      <td className="px-3 py-3">
+                        <div className="flex flex-col">
+                          <span className="font-medium text-slate-900">
+                            {row.firstName} {row.surname}
+                          </span>
+                          <span className="text-xs text-slate-500">
+                            {maskPhone(row.phone)}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-3 py-3 text-slate-700">
+                        {PROVINCE_LABELS[row.province as Province] ?? row.province}
+                      </td>
+                      <td className="max-w-[180px] px-3 py-3 text-slate-700">
+                        <div className="flex flex-col gap-0.5">
+                          <WorkFocusSummary items={row.mainWorkFocus ?? []} />
+                          <span className="text-xs text-slate-500">
+                            {YEARS_EXPERIENCE_LABELS[row.yearsExperience as YearsExperience] ?? row.yearsExperience}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-3 py-3">
+                        <CertBadge value={row.hasCertification} />
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-3 text-slate-500">
+                        <time
+                          dateTime={
+                            typeof row.submittedAt === "string"
+                              ? row.submittedAt
+                              : row.submittedAt.toISOString()
+                          }
+                          title={
+                            typeof row.submittedAt === "string"
+                              ? new Date(row.submittedAt).toLocaleString()
+                              : row.submittedAt.toLocaleString()
+                          }
+                        >
+                          <RelativeTime date={row.submittedAt} />
+                        </time>
+                      </td>
+                      <td className="px-3 py-3">
+                        <StatusBadge status={row.status as SubmissionStatus} />
+                      </td>
+                      <td className="sticky right-0 z-10 bg-white px-3 py-3 text-right shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.08)] group-hover:bg-slate-50">
+                        <div className="flex items-center justify-end gap-2">
+                          <Link
+                            href={`/admin/responses/${row.id}/edit`}
+                            className="rounded-md bg-brand-50 px-2.5 py-1.5 text-xs font-semibold text-brand-700 hover:bg-brand-100"
+                          >
+                            Edit
+                          </Link>
+                          <Link
+                            href={`/admin/responses/${row.id}`}
+                            className="rounded-md bg-slate-50 px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-100"
+                          >
+                            View
+                          </Link>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+
+            <div className="border-t border-slate-100">
+              <Pagination
+                page={page}
+                pageSize={pageSize}
+                total={total}
+                onChange={handlePageChange}
+              />
+            </div>
+          </div>
+
+          {/* Mobile cards — below lg */}
+          <div className="flex flex-col gap-3 lg:hidden">
+            {rows.map((row) => {
+              const isSelected = selectedIds.has(row.id);
+              return (
+                <div
+                  key={row.id}
+                  className={cn(
+                    "rounded-xl border bg-white p-4 shadow-sm transition-colors",
+                    isSelected ? "border-brand-300 bg-brand-50" : "border-slate-200",
+                  )}
+                >
+                  <div className="flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => toggleRow(row.id)}
+                      aria-label={`Select ${row.firstName} ${row.surname}`}
+                      className="mt-1 rounded border-slate-300"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <h3 className="font-semibold text-slate-900 truncate">
+                          {row.firstName} {row.surname}
+                        </h3>
+                        <StatusBadge status={row.status as SubmissionStatus} />
+                      </div>
+                      <p className="mt-0.5 text-xs text-slate-500">
+                        {PROVINCE_LABELS[row.province as Province] ?? row.province} ·{" "}
+                        {maskPhone(row.phone)}
+                      </p>
+
+                      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-600">
+                        <CertBadge value={row.hasCertification} />
+                        <span>·</span>
+                        <span className="text-slate-400">
+                          <RelativeTime date={row.submittedAt} />
+                        </span>
+                      </div>
+
+                      <div className="mt-1.5 text-xs text-slate-500">
+                        <span className="truncate">
+                          <WorkFocusSummary items={row.mainWorkFocus ?? []} />
+                        </span>
+                        <span className="text-slate-400">
+                          {" · "}
+                          {YEARS_EXPERIENCE_LABELS[row.yearsExperience as YearsExperience] ?? row.yearsExperience}
+                        </span>
+                      </div>
+
+                      <div className="mt-3 flex items-center gap-2">
+                        <Link
+                          href={`/admin/responses/${row.id}/edit`}
+                          className="flex-1 rounded-md bg-brand-600 px-3 py-2 text-center text-xs font-semibold text-white hover:bg-brand-700"
+                        >
+                          Edit
+                        </Link>
+                        <Link
+                          href={`/admin/responses/${row.id}`}
+                          className="flex-1 rounded-md bg-slate-100 px-3 py-2 text-center text-xs font-medium text-slate-700 hover:bg-slate-200"
+                        >
+                          View
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+
+            <div className="mt-1">
+              <Pagination
+                page={page}
+                pageSize={pageSize}
+                total={total}
+                onChange={handlePageChange}
+              />
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}

@@ -1,0 +1,1139 @@
+{
+  "id": "9312b5f8-a587-4d13-ba8c-3b480f444a61",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.admin_sessions": {
+      "name": "admin_sessions",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "admin_user_id": {
+          "name": "admin_user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ip_address": {
+          "name": "ip_address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "user_agent": {
+          "name": "user_agent",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "revoked_at": {
+          "name": "revoked_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "admin_sessions_admin_user_idx": {
+          "name": "admin_sessions_admin_user_idx",
+          "columns": [
+            {
+              "expression": "admin_user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "admin_sessions_expires_at_idx": {
+          "name": "admin_sessions_expires_at_idx",
+          "columns": [
+            {
+              "expression": "expires_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "admin_sessions_admin_user_id_admin_users_id_fk": {
+          "name": "admin_sessions_admin_user_id_admin_users_id_fk",
+          "tableFrom": "admin_sessions",
+          "tableTo": "admin_users",
+          "columnsFrom": [
+            "admin_user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.admin_users": {
+      "name": "admin_users",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "password_hash": {
+          "name": "password_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "role": {
+          "name": "role",
+          "type": "admin_role",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'admin'"
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "last_login_at": {
+          "name": "last_login_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "admin_users_email_unique_idx": {
+          "name": "admin_users_email_unique_idx",
+          "columns": [
+            {
+              "expression": "email",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.audit_log": {
+      "name": "audit_log",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "survey_id": {
+          "name": "survey_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "actor_admin_user_id": {
+          "name": "actor_admin_user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "action": {
+          "name": "action",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "payload": {
+          "name": "payload",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "audit_log_survey_idx": {
+          "name": "audit_log_survey_idx",
+          "columns": [
+            {
+              "expression": "survey_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "audit_log_actor_idx": {
+          "name": "audit_log_actor_idx",
+          "columns": [
+            {
+              "expression": "actor_admin_user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "audit_log_created_at_idx": {
+          "name": "audit_log_created_at_idx",
+          "columns": [
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "audit_log_survey_id_technicians_survey_id_fk": {
+          "name": "audit_log_survey_id_technicians_survey_id_fk",
+          "tableFrom": "audit_log",
+          "tableTo": "technicians_survey",
+          "columnsFrom": [
+            "survey_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "audit_log_actor_admin_user_id_admin_users_id_fk": {
+          "name": "audit_log_actor_admin_user_id_admin_users_id_fk",
+          "tableFrom": "audit_log",
+          "tableTo": "admin_users",
+          "columnsFrom": [
+            "actor_admin_user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.export_log": {
+      "name": "export_log",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "actor_admin_user_id": {
+          "name": "actor_admin_user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "format": {
+          "name": "format",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "filters": {
+          "name": "filters",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "row_count": {
+          "name": "row_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "anonymised": {
+          "name": "anonymised",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "export_log_actor_admin_user_id_admin_users_id_fk": {
+          "name": "export_log_actor_admin_user_id_admin_users_id_fk",
+          "tableFrom": "export_log",
+          "tableTo": "admin_users",
+          "columnsFrom": [
+            "actor_admin_user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.survey_events": {
+      "name": "survey_events",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "phone": {
+          "name": "phone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "step": {
+          "name": "step",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "step_name": {
+          "name": "step_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "event": {
+          "name": "event",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ip_address": {
+          "name": "ip_address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "user_agent": {
+          "name": "user_agent",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "survey_events_phone_idx": {
+          "name": "survey_events_phone_idx",
+          "columns": [
+            {
+              "expression": "phone",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "survey_events_step_idx": {
+          "name": "survey_events_step_idx",
+          "columns": [
+            {
+              "expression": "step",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "survey_events_created_at_idx": {
+          "name": "survey_events_created_at_idx",
+          "columns": [
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.technicians_survey": {
+      "name": "technicians_survey",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "submitted_at": {
+          "name": "submitted_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "status": {
+          "name": "status",
+          "type": "submission_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pending'"
+        },
+        "first_name": {
+          "name": "first_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "surname": {
+          "name": "surname",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "gender": {
+          "name": "gender",
+          "type": "gender",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "age_group": {
+          "name": "age_group",
+          "type": "age_group",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "education_level": {
+          "name": "education_level",
+          "type": "education_level",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "years_experience": {
+          "name": "years_experience",
+          "type": "years_experience",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "main_work_focus": {
+          "name": "main_work_focus",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "main_work_focus_other": {
+          "name": "main_work_focus_other",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "province": {
+          "name": "province",
+          "type": "province",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "city": {
+          "name": "city",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "suburb": {
+          "name": "suburb",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "gps_latitude": {
+          "name": "gps_latitude",
+          "type": "numeric(10, 7)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "gps_longitude": {
+          "name": "gps_longitude",
+          "type": "numeric(10, 7)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "gps_accuracy_meters": {
+          "name": "gps_accuracy_meters",
+          "type": "numeric(10, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "phone": {
+          "name": "phone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "has_formal_training": {
+          "name": "has_formal_training",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "training_institution": {
+          "name": "training_institution",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "training_year": {
+          "name": "training_year",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "has_certification": {
+          "name": "has_certification",
+          "type": "has_certification",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "certifications_held": {
+          "name": "certifications_held",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hevacraz_member_number": {
+          "name": "hevacraz_member_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "confidence_traditional_refrigerants": {
+          "name": "confidence_traditional_refrigerants",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "confidence_low_gwp_refrigerants": {
+          "name": "confidence_low_gwp_refrigerants",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "access_to_tools": {
+          "name": "access_to_tools",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "access_to_spare_parts": {
+          "name": "access_to_spare_parts",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "access_to_low_gwp_refrigerants": {
+          "name": "access_to_low_gwp_refrigerants",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "obstacle_high_import_costs": {
+          "name": "obstacle_high_import_costs",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "obstacle_forex_shortages": {
+          "name": "obstacle_forex_shortages",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "obstacle_unreliable_suppliers": {
+          "name": "obstacle_unreliable_suppliers",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "obstacle_counterfeit_products": {
+          "name": "obstacle_counterfeit_products",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "obstacles_other": {
+          "name": "obstacles_other",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "biggest_daily_challenge": {
+          "name": "biggest_daily_challenge",
+          "type": "biggest_daily_challenge",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "biggest_daily_challenge_other": {
+          "name": "biggest_daily_challenge_other",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "load_shedding_frequency": {
+          "name": "load_shedding_frequency",
+          "type": "load_shedding_frequency",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "refrigerant_recovery_equipment_use": {
+          "name": "refrigerant_recovery_equipment_use",
+          "type": "recovery_equipment_use",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ppe_access": {
+          "name": "ppe_access",
+          "type": "ppe_access",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ehs_compliance_barriers": {
+          "name": "ehs_compliance_barriers",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ehs_compliance_barriers_other": {
+          "name": "ehs_compliance_barriers_other",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "installs_energy_efficient": {
+          "name": "installs_energy_efficient",
+          "type": "energy_efficient_install",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "energy_efficient_barriers": {
+          "name": "energy_efficient_barriers",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "energy_efficient_barriers_other": {
+          "name": "energy_efficient_barriers_other",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "consent_to_contact": {
+          "name": "consent_to_contact",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "consent_to_public_registry": {
+          "name": "consent_to_public_registry",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "preferred_language": {
+          "name": "preferred_language",
+          "type": "preferred_language",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "profile_photo_url": {
+          "name": "profile_photo_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ip_address": {
+          "name": "ip_address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "user_agent": {
+          "name": "user_agent",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "submission_source": {
+          "name": "submission_source",
+          "type": "submission_source",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'web'"
+        },
+        "notes": {
+          "name": "notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "technicians_survey_phone_idx": {
+          "name": "technicians_survey_phone_idx",
+          "columns": [
+            {
+              "expression": "phone",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "technicians_survey_email_idx": {
+          "name": "technicians_survey_email_idx",
+          "columns": [
+            {
+              "expression": "email",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "technicians_survey_province_idx": {
+          "name": "technicians_survey_province_idx",
+          "columns": [
+            {
+              "expression": "province",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "technicians_survey_main_work_focus_idx": {
+          "name": "technicians_survey_main_work_focus_idx",
+          "columns": [
+            {
+              "expression": "main_work_focus",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        },
+        "technicians_survey_submitted_at_idx": {
+          "name": "technicians_survey_submitted_at_idx",
+          "columns": [
+            {
+              "expression": "submitted_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "technicians_survey_status_idx": {
+          "name": "technicians_survey_status_idx",
+          "columns": [
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.admin_role": {
+      "name": "admin_role",
+      "schema": "public",
+      "values": [
+        "admin",
+        "super_admin"
+      ]
+    },
+    "public.age_group": {
+      "name": "age_group",
+      "schema": "public",
+      "values": [
+        "under_25",
+        "25_34",
+        "35_44",
+        "45_54",
+        "55_64",
+        "65_plus"
+      ]
+    },
+    "public.biggest_daily_challenge": {
+      "name": "biggest_daily_challenge",
+      "schema": "public",
+      "values": [
+        "power_outages",
+        "forex_shortages",
+        "spare_parts",
+        "counterfeit",
+        "unsafe_conditions",
+        "customer_payment",
+        "training_opportunities",
+        "certification_access",
+        "transport_mobility",
+        "unqualified_competition",
+        "other"
+      ]
+    },
+    "public.education_level": {
+      "name": "education_level",
+      "schema": "public",
+      "values": [
+        "none",
+        "primary",
+        "o_level",
+        "a_level",
+        "vocational",
+        "diploma",
+        "degree",
+        "postgraduate"
+      ]
+    },
+    "public.energy_efficient_install": {
+      "name": "energy_efficient_install",
+      "schema": "public",
+      "values": [
+        "always",
+        "on_request",
+        "sometimes",
+        "rarely",
+        "never"
+      ]
+    },
+    "public.gender": {
+      "name": "gender",
+      "schema": "public",
+      "values": [
+        "male",
+        "female",
+        "prefer_not_to_say"
+      ]
+    },
+    "public.has_certification": {
+      "name": "has_certification",
+      "schema": "public",
+      "values": [
+        "yes",
+        "no",
+        "studying"
+      ]
+    },
+    "public.load_shedding_frequency": {
+      "name": "load_shedding_frequency",
+      "schema": "public",
+      "values": [
+        "never",
+        "rarely",
+        "occasionally",
+        "frequently",
+        "daily"
+      ]
+    },
+    "public.ppe_access": {
+      "name": "ppe_access",
+      "schema": "public",
+      "values": [
+        "full_provided",
+        "partial_provided",
+        "self_provided",
+        "none"
+      ]
+    },
+    "public.preferred_language": {
+      "name": "preferred_language",
+      "schema": "public",
+      "values": [
+        "english",
+        "shona",
+        "ndebele"
+      ]
+    },
+    "public.province": {
+      "name": "province",
+      "schema": "public",
+      "values": [
+        "bulawayo",
+        "harare",
+        "manicaland",
+        "mashonaland_central",
+        "mashonaland_east",
+        "mashonaland_west",
+        "masvingo",
+        "matabeleland_north",
+        "matabeleland_south",
+        "midlands"
+      ]
+    },
+    "public.recovery_equipment_use": {
+      "name": "recovery_equipment_use",
+      "schema": "public",
+      "values": [
+        "always",
+        "sometimes",
+        "rarely",
+        "never",
+        "no_access"
+      ]
+    },
+    "public.submission_source": {
+      "name": "submission_source",
+      "schema": "public",
+      "values": [
+        "web",
+        "pwa_offline_sync",
+        "admin_entry"
+      ]
+    },
+    "public.submission_status": {
+      "name": "submission_status",
+      "schema": "public",
+      "values": [
+        "pending",
+        "verified",
+        "flagged",
+        "duplicate"
+      ]
+    },
+    "public.years_experience": {
+      "name": "years_experience",
+      "schema": "public",
+      "values": [
+        "less_than_1",
+        "1_3",
+        "4_6",
+        "7_10",
+        "11_15",
+        "16_20",
+        "more_than_20"
+      ]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

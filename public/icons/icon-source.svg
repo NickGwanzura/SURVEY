@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#0d4f3c" />
+  <circle cx="256" cy="230.4" r="215.04" fill="#10b981" opacity="0.18" />
+  <text x="256" y="285.4912"
+        font-family="Helvetica, Arial, sans-serif"
+        font-size="163.84"
+        font-weight="700"
+        fill="#ffffff"
+        text-anchor="middle"
+        letter-spacing="-2">RAC</text>
+  <text x="256" y="375.6032"
+        font-family="Helvetica, Arial, sans-serif"
+        font-size="56.32"
+        font-weight="500"
+        fill="#ffffff"
+        opacity="0.85"
+        text-anchor="middle"
+        letter-spacing="2">ZIMBABWE</text>
+</svg>

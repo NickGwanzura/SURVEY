@@ -1,0 +1,124 @@
+import { NextResponse } from "next/server";
+import { sql } from "drizzle-orm";
+import { getCurrentAdmin } from "@/lib/auth-server";
+import { db } from "@/lib/db";
+
+const DB_COLUMN_MAP: Record<string, string> = {
+  firstName: "first_name",
+  surname: "surname",
+  phone: "phone",
+  email: "email",
+  province: "province",
+  city: "city",
+  suburb: "suburb",
+  gender: "gender",
+  ageGroup: "age_group",
+  educationLevel: "education_level",
+  yearsExperience: "years_experience",
+  mainWorkFocus: "main_work_focus",
+  hasCertification: "has_certification",
+  hasFormalTraining: "has_formal_training",
+  confidenceTraditionalRefrigerants: "confidence_traditional_refrigerants",
+  confidenceLowGwpRefrigerants: "confidence_low_gwp_refrigerants",
+  status: "status",
+  submittedAt: "submitted_at",
+  submissionSource: "submission_source",
+  consentToContact: "consent_to_contact",
+  consentToPublicRegistry: "consent_to_public_registry",
+  installsEnergyEfficient: "installs_energy_efficient",
+};
+
+const ALLOWED_FIELDS = new Set(Object.keys(DB_COLUMN_MAP));
+
+// Reverse map: DB column name -> camelCase field key
+const CAMEL_MAP: Record<string, string> = Object.fromEntries(
+  Object.entries(DB_COLUMN_MAP).map(([camel, db]) => [db, camel]),
+);
+
+/** Resolve a camelCase field key to its DB column name. Returns null if unknown. */
+function resolveColumn(field: string): string | null {
+  return DB_COLUMN_MAP[field] ?? null;
+}
+
+/** Map snake_case DB row keys to camelCase frontend keys. */
+function mapRowKeys(row: Record<string, unknown>): Record<string, unknown> {
+  const mapped: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(row)) {
+    const camelKey = CAMEL_MAP[key] ?? key;
+    mapped[camelKey] = value;
+  }
+  return mapped;
+}
+
+const VALID_STATUSES = ["pending", "verified", "flagged", "duplicate"];
+
+export async function GET(req: Request) {
+  const admin = await getCurrentAdmin();
+  if (!admin) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const { searchParams } = new URL(req.url);
+    const fields = searchParams
+      .getAll("fields")
+      .filter((f) => ALLOWED_FIELDS.has(f));
+    const groupBy = searchParams.get("groupBy");
+    const statusFilter = searchParams.get("status");
+    const provinceFilter = searchParams.get("province");
+
+    if (fields.length === 0) {
+      return NextResponse.json(
+        { error: "No fields selected" },
+        { status: 400 },
+      );
+    }
+
+    const statusCond =
+      statusFilter && VALID_STATUSES.includes(statusFilter)
+        ? sql`status = ${statusFilter}`
+        : sql`1 = 1`;
+    const provinceCond = provinceFilter
+      ? sql`province = ${provinceFilter}`
+      : sql`1 = 1`;
+
+    if (groupBy && groupBy !== "none" && ALLOWED_FIELDS.has(groupBy)) {
+      const groupCol = resolveColumn(groupBy);
+      if (!groupCol) {
+        return NextResponse.json({ error: "Invalid groupBy field" }, { status: 400 });
+      }
+      const query = sql`
+        SELECT ${sql.raw(groupCol)} AS "_groupKey", COUNT(*)::int AS count
+        FROM technicians_survey
+        WHERE ${statusCond} AND ${provinceCond}
+        GROUP BY ${sql.raw(groupCol)}
+        ORDER BY count DESC
+      `;
+      const result = await db.execute(query);
+      return NextResponse.json({
+        results: result.rows.map(mapRowKeys),
+        grouped: true,
+      });
+    }
+
+    const cols = fields.map(resolveColumn).filter((c): c is string => c !== null);
+    const selectCols = cols.join(", ");
+    const query = sql`
+      SELECT ${sql.raw(selectCols)}
+      FROM technicians_survey
+      WHERE ${statusCond} AND ${provinceCond}
+      LIMIT 500
+    `;
+    const result = await db.execute(query);
+    return NextResponse.json({
+      results: result.rows.map(mapRowKeys),
+      grouped: false,
+    });
+  } catch (err) {
+    console.error("[GET /api/admin/report-builder]", err);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
+}

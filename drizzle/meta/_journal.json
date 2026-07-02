@@ -1,0 +1,63 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1778904201145,
+      "tag": "0000_loud_callisto",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1779176560236,
+      "tag": "0001_complete_landau",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1779216000000,
+      "tag": "0002_create_password_reset_and_system_events",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1779723435782,
+      "tag": "0004_add_national_certificate",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1779820526939,
+      "tag": "0004_add_technician_survey_reports",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "dialect": "postgresql",
+      "when": 1780143931091,
+      "tag": "0005_add_data_consent",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1780389990544,
+      "tag": "0006_strange_toro",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1780732000000,
+      "tag": "0007_add_registration_numbers",
+      "breakpoints": true
+    }
+  ]
+}

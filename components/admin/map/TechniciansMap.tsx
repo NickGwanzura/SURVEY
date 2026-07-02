@@ -1,0 +1,347 @@
+"use client";
+
+import "leaflet/dist/leaflet.css";
+import "leaflet.markercluster/dist/MarkerCluster.css";
+import "leaflet.markercluster/dist/MarkerCluster.Default.css";
+
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import L from "leaflet";
+import "leaflet.heat";
+import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
+import MarkerClusterGroup from "react-leaflet-cluster";
+
+import type { Province } from "@/lib/constants/provinces";
+import type { MainWorkFocus } from "@/lib/constants/workFocus";
+import type { HasCertification } from "@/lib/constants/refrigerants";
+import type { SubmissionStatus } from "@/lib/constants/challenges";
+import type { YearsExperience } from "@/lib/constants/ageGroups";
+import { PROVINCE_LABELS } from "@/lib/constants/provinces";
+import { MAIN_WORK_FOCUS_LABELS } from "@/lib/constants/workFocus";
+import { HAS_CERTIFICATION_LABELS } from "@/lib/constants/refrigerants";
+import { YEARS_EXPERIENCE_LABELS } from "@/lib/constants/ageGroups";
+
+import { MapFilters, type MapFilterState } from "./MapFilters";
+
+export type MapMarker = {
+  id: string;
+  firstName: string;
+  surname: string;
+  province: Province;
+  mainWorkFocus: MainWorkFocus[];
+  hasCertification: HasCertification;
+  status: SubmissionStatus;
+  yearsExperience: YearsExperience;
+  lat: number;
+  lng: number;
+};
+
+const ZIMBABWE_CENTER: [number, number] = [-19.015, 29.155];
+const INITIAL_ZOOM = 6;
+
+// Status → colour mapping for DivIcon
+const STATUS_COLORS: Record<SubmissionStatus, string> = {
+  pending: "#3b82f6",  // blue-500
+  verified: "#10b981", // emerald-500
+  flagged: "#f59e0b",  // amber-500
+  duplicate: "#64748b", // slate-500
+};
+
+function makeIcon(status: SubmissionStatus) {
+  const color = STATUS_COLORS[status];
+  return L.divIcon({
+    className: "",
+    html: `<div style="
+      width:14px;height:14px;border-radius:50%;
+      background:${color};border:2px solid white;
+      box-shadow:0 1px 3px rgba(0,0,0,.4);
+    "></div>`,
+    iconSize: [14, 14],
+    iconAnchor: [7, 7],
+    popupAnchor: [0, -10],
+  });
+}
+
+// ─── Heatmap layer via useMap ────────────────────────────────────────────────
+
+type HeatPoint = [number, number, number];
+
+function HeatmapLayer({ points }: { points: HeatPoint[] }) {
+  const map = useMap();
+  const layerRef = useRef<L.HeatLayer | null>(null);
+
+  useEffect(() => {
+    const heat = L.heatLayer([], {
+      radius: 25,
+      blur: 15,
+      maxZoom: 17,
+      gradient: { 0.4: "#3b82f6", 0.65: "#eab308", 1: "#ef4444" },
+    });
+    heat.addTo(map);
+    layerRef.current = heat;
+
+    return () => {
+      map.removeLayer(heat);
+    };
+  }, [map]);
+
+  useEffect(() => {
+    layerRef.current?.setLatLngs(points);
+  }, [points]);
+
+  return null;
+}
+
+// ─── Marker popup content (React DOM — no dangerouslySetInnerHTML) ───────────
+
+function MarkerPopupContent({ marker }: { marker: MapMarker }) {
+  const certLabel = HAS_CERTIFICATION_LABELS[marker.hasCertification];
+  const focusLabel =
+    marker.mainWorkFocus.length === 0
+      ? "—"
+      : marker.mainWorkFocus
+          .map((f) => MAIN_WORK_FOCUS_LABELS[f] ?? f)
+          .join(", ");
+  const yearsLabel = YEARS_EXPERIENCE_LABELS[marker.yearsExperience];
+  const statusColor = STATUS_COLORS[marker.status];
+
+  return (
+    <div style={{ minWidth: 180, fontFamily: "sans-serif", fontSize: 13, lineHeight: 1.5 }}>
+      <p style={{ fontWeight: 600, margin: "0 0 4px" }}>
+        {marker.firstName} {marker.surname}
+      </p>
+      <p style={{ margin: 0, color: "#555" }}>{PROVINCE_LABELS[marker.province]}</p>
+      <p style={{ margin: "2px 0", color: "#555" }}>{focusLabel}</p>
+      <p style={{ margin: "2px 0", color: "#555" }}>Experience: {yearsLabel}</p>
+      <span
+        style={{
+          display: "inline-block",
+          padding: "2px 8px",
+          borderRadius: 999,
+          background: `${statusColor}22`,
+          color: statusColor,
+          border: `1px solid ${statusColor}66`,
+          fontSize: 11,
+          fontWeight: 600,
+          marginTop: 4,
+          textTransform: "capitalize",
+        }}
+      >
+        {marker.status}
+      </span>
+      <br />
+      <span style={{ fontSize: 11, color: "#777", display: "inline-block", marginTop: 4 }}>
+        Certification: {certLabel}
+      </span>
+    </div>
+  );
+}
+
+// ─── Marker layer ─────────────────────────────────────────────────────────────
+
+function MarkersLayer({ markers }: { markers: MapMarker[] }) {
+  return (
+    <MarkerClusterGroup chunkedLoading>
+      {markers.map((m) => {
+        const icon = makeIcon(m.status);
+        return (
+          <Marker key={m.id} position={[m.lat, m.lng]} icon={icon}>
+            <Popup>
+              <MarkerPopupContent marker={m} />
+            </Popup>
+          </Marker>
+        );
+      })}
+    </MarkerClusterGroup>
+  );
+}
+
+// ─── Main component ──────────────────────────────────────────────────────────
+
+type TechniciansMapProps = {
+  markers: MapMarker[];
+};
+
+export function TechniciansMap({ markers }: TechniciansMapProps) {
+  const [filters, setFilters] = useState<MapFilterState>({
+    province: "",
+    mainWorkFocus: "",
+    hasCertification: "",
+    yearsExperience: "",
+    status: "",
+  });
+  const [heatmap, setHeatmap] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [exporting, setExporting] = useState(false);
+
+  const filtered = useMemo(() => {
+    return markers.filter((m) => {
+      if (filters.province && m.province !== filters.province) return false;
+      if (
+        filters.mainWorkFocus &&
+        !m.mainWorkFocus.includes(filters.mainWorkFocus as MainWorkFocus)
+      )
+        return false;
+      if (filters.hasCertification && m.hasCertification !== filters.hasCertification) return false;
+      if (filters.yearsExperience && m.yearsExperience !== filters.yearsExperience) return false;
+      if (filters.status && m.status !== filters.status) return false;
+      return true;
+    });
+  }, [markers, filters]);
+
+  const heatPoints = useMemo<HeatPoint[]>(
+    () => filtered.map((m) => [m.lat, m.lng, 1]),
+    [filtered],
+  );
+
+  const handleExportGeoJSON = useCallback(async () => {
+    setExporting(true);
+    try {
+      const body = {
+        format: "geojson",
+        filters: {
+          province: filters.province || undefined,
+          mainWorkFocus: filters.mainWorkFocus || undefined,
+          hasCertification: filters.hasCertification || undefined,
+          yearsExperience: filters.yearsExperience || undefined,
+          status: filters.status || undefined,
+        },
+        sections: {
+          background: true,
+          skills: true,
+          tools: true,
+          challenges: true,
+          energy: true,
+          consent: true,
+        },
+        anonymise: false,
+        includePhotos: false,
+      };
+
+      const res = await fetch("/api/admin/export", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      if (!res.ok) throw new Error("Export failed");
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `technicians-map-${Date.now()}.geojson`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      console.error("GeoJSON export failed");
+    } finally {
+      setExporting(false);
+    }
+  }, [filters]);
+
+  return (
+    <div className="relative flex h-[calc(100vh-120px)] min-h-[500px] overflow-hidden rounded-xl border border-slate-200">
+      {/* Toolbar */}
+      <div className="absolute left-0 right-0 top-0 z-[1000] flex items-center gap-2 border-b border-slate-200 bg-white/90 px-3 py-2 backdrop-blur-sm">
+        <button
+          type="button"
+          onClick={() => setSidebarOpen((v) => !v)}
+          aria-expanded={sidebarOpen}
+          className="rounded-md border border-slate-300 px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+        >
+          {sidebarOpen ? "Hide filters" : "Show filters"}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setHeatmap((v) => !v)}
+          aria-pressed={heatmap}
+          className={`rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors ${
+            heatmap
+              ? "border-brand-600 bg-brand-600 text-white"
+              : "border-slate-300 text-slate-700 hover:bg-slate-50"
+          }`}
+        >
+          Heatmap
+        </button>
+
+        <span className="ml-auto text-xs text-slate-500">
+          {filtered.length} of {markers.length} technicians
+        </span>
+
+        <button
+          type="button"
+          onClick={handleExportGeoJSON}
+          disabled={exporting}
+          className="rounded-md border border-slate-300 px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+        >
+          {exporting ? "Exporting..." : "Export GeoJSON"}
+        </button>
+      </div>
+
+      {/* Sidebar */}
+      {sidebarOpen && (
+        <div className="absolute bottom-0 left-0 top-10 z-[999] w-64 overflow-y-auto border-r border-slate-200 bg-white/95 pt-2 shadow-md backdrop-blur-sm">
+          <MapFilters value={filters} onChange={setFilters} />
+        </div>
+      )}
+
+      {/* Map */}
+      <div
+        className={`h-full w-full pt-10 ${sidebarOpen ? "pl-64" : ""}`}
+        role="region"
+        aria-label="Technician locations map"
+      >
+        <MapContainer
+          center={ZIMBABWE_CENTER}
+          zoom={INITIAL_ZOOM}
+          scrollWheelZoom
+          className="h-full w-full"
+          zoomControl={false}
+        >
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+
+          {heatmap && <HeatmapLayer points={heatPoints} />}
+          <MarkersLayer markers={filtered} />
+        </MapContainer>
+      </div>
+
+      {/* Legend */}
+      <div
+        className="absolute bottom-4 right-4 z-[1000] rounded-lg border border-slate-200 bg-white/90 px-3 py-2 text-xs shadow-sm backdrop-blur-sm"
+        aria-label="Map legend"
+      >
+        {heatmap ? (
+          <>
+            <p className="mb-1.5 font-semibold text-slate-700">Density</p>
+            <div className="flex items-center gap-1.5">
+              <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: "#3b82f6" }} />
+              <span>Low</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: "#eab308" }} />
+              <span>Medium</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: "#ef4444" }} />
+              <span>High</span>
+            </div>
+          </>
+        ) : (
+          <>
+            <p className="mb-1.5 font-semibold text-slate-700">Status</p>
+            {(Object.entries(STATUS_COLORS) as [SubmissionStatus, string][]).map(([s, c]) => (
+              <div key={s} className="flex items-center gap-1.5 capitalize">
+                <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: c }} />
+                {s}
+              </div>
+            ))}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
