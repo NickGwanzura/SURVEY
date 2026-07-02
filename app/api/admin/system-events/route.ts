@@ -22,7 +22,8 @@ export async function GET(req: NextRequest) {
   }
 
   // Restricted to the designated sysadmin email
-  if (admin.user.email !== "nicholas.gwanzura@outlook.com") {
+  const sysadminEmail = process.env.SYSADMIN_EMAIL || "nicholas.gwanzura@outlook.com";
+  if (admin.user.email !== sysadminEmail) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

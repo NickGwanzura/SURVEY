@@ -25,9 +25,9 @@ export async function POST(req: NextRequest) {
     const signed = await createSignedPhotoUpload(parsed.data.contentType);
     return NextResponse.json(signed);
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Upload failed.";
+    console.error("[POST /api/survey/upload-photo] Upload failed:", err);
     return NextResponse.json(
-      { error: message, code: "R2_NOT_CONFIGURED" },
+      { error: "Upload failed. Image storage service is temporarily unavailable.", code: "R2_NOT_CONFIGURED" },
       { status: 503 },
     );
   }

@@ -8,7 +8,7 @@ import { Skeleton, SkeletonCard, SkeletonChart, SkeletonTable } from "@/componen
 
 export const dynamic = "force-dynamic";
 
-const ALLOWED_EMAIL = "nicholas.gwanzura@outlook.com";
+const ALLOWED_EMAIL = process.env.SYSADMIN_EMAIL || "nicholas.gwanzura@outlook.com";
 
 async function SysadminContent() {
   const admin = await getCurrentAdmin();

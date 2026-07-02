@@ -184,10 +184,8 @@ export async function POST(req: NextRequest) {
     });
   } catch (err) {
     console.error("[survey/submit] Unexpected error:", err);
-    const message =
-      err instanceof Error ? err.message : "An unexpected error occurred.";
     return NextResponse.json(
-      { error: `Submission failed: ${message}` },
+      { error: "Submission failed. Please try again later or contact support if the issue persists." },
       { status: 500 },
     );
   }

@@ -70,7 +70,7 @@ export default function PublicLayout({
               <span aria-hidden className="text-slate-300">·</span>
               <Link href="/admin/login" className="hover:text-brand-600 transition-colors">Staff sign in</Link>
               <span aria-hidden className="text-slate-300">·</span>
-              <a href="https://spiritusglobal.tech" target="_blank" rel="noopener noreferrer" className="hover:text-brand-600 transition-colors">Spiritus Systems</a>
+              <a href="https://spiritusglobal.tech" target="_blank" rel="noopener noreferrer" className="hover:text-brand-600 transition-colors">Developed and Maintained by SPIRITUS GLOBAL</a>
             </div>
           </div>
         </footer>
