@@ -1,7 +1,6 @@
 import "server-only";
 
-import { S3Client } from "@aws-sdk/client-s3";
-import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 const R2_ENDPOINT = process.env.R2_ACCOUNT_ID
@@ -62,6 +61,7 @@ export type SignedPhotoUpload = {
 
 export async function createSignedPhotoUpload(
   contentType: string,
+  byteLength: number,
 ): Promise<SignedPhotoUpload> {
   const bucket = requireBucket();
   const publicUrl = requirePublicUrl();
@@ -80,6 +80,7 @@ export async function createSignedPhotoUpload(
     Bucket: bucket,
     Key: key,
     ContentType: contentType,
+    ContentLength: byteLength,
   });
 
   const uploadUrl = await getSignedUrl(getClient(), command, {

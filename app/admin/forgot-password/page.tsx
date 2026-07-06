@@ -65,7 +65,7 @@ export default function ForgotPasswordPage() {
             </div>
             <h1 className="text-xl font-semibold text-slate-900">Check your email</h1>
             <p className="mt-2 text-sm text-slate-600">
-              If an account exists with that email address, we've sent a password reset link. It expires in 2 hours.
+              If an account exists with that email address, we&apos;ve sent a password reset link. It expires in 2 hours.
             </p>
             <Link href="/admin/login" className="mt-6 inline-block text-sm font-medium text-brand-600 hover:underline">
               Back to sign in
@@ -98,7 +98,7 @@ export default function ForgotPasswordPage() {
           <div className="mb-8">
             <p className="text-xs font-bold uppercase tracking-widest text-brand-600">NOU · HEVACRAZ — Admin</p>
             <h1 className="mt-2 text-2xl font-semibold text-slate-900">Forgot your password?</h1>
-            <p className="mt-1 text-sm text-slate-500">Enter your email address and we'll send you a reset link.</p>
+            <p className="mt-1 text-sm text-slate-500">Enter your email address and we&apos;ll send you a reset link.</p>
           </div>
 
           <form onSubmit={onSubmit} className="flex flex-col gap-4">

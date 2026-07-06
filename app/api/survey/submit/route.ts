@@ -6,19 +6,27 @@ import { sendSurveyCompletedEmail, notifyAdminsOfNewSubmission } from "@/lib/adm
 import { logSystemEvent } from "@/lib/admin/system-events";
 import { surveyEvents, techniciansSurvey } from "@/lib/schema";
 import { surveySubmissionSchema } from "@/lib/validation";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
-function getClientIp(req: NextRequest): string | null {
-  const forwarded = req.headers.get("x-forwarded-for");
-  if (forwarded) {
-    return forwarded.split(",")[0].trim();
-  }
-  return req.headers.get("x-real-ip");
-}
-
 export async function POST(req: NextRequest) {
   try {
+    // Rate limit: 5 submissions per IP per 15 minutes
+    const { allowed, retryAfter } = await checkRateLimit(
+      `survey-submit:${getClientIp(req)}`,
+      5,
+    );
+    if (!allowed) {
+      return NextResponse.json(
+        { error: `Too many requests. Try again in ${retryAfter} seconds.` },
+        {
+          status: 429,
+          headers: { "Retry-After": String(retryAfter) },
+        },
+      );
+    }
+
     let body: unknown;
     try {
       body = await req.json();
@@ -182,7 +190,25 @@ export async function POST(req: NextRequest) {
       id: inserted.id,
       referenceNumber,
     });
-  } catch (err) {
+  } catch (err: unknown) {
+    // Catch Postgres unique constraint violation (code 23505) — means a
+    // concurrent request inserted the same phone number between our check and
+    // insert. Return the same 409 the app-level check would have.
+    if (
+      typeof err === "object" &&
+      err !== null &&
+      "code" in err &&
+      (err as { code: string }).code === "23505"
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "This phone number has already been submitted. If you believe this is an error, please contact support.",
+          code: "DUPLICATE_PHONE",
+        },
+        { status: 409 },
+      );
+    }
     console.error("[survey/submit] Unexpected error:", err);
     return NextResponse.json(
       { error: "Submission failed. Please try again later or contact support if the issue persists." },

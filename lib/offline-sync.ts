@@ -105,7 +105,13 @@ export async function flushQueuedSubmissions(): Promise<{
       });
       if (!res.ok) {
         const text = await res.text().catch(() => "");
-        await markSubmissionAttempt(entry.id, text || `HTTP ${res.status}`);
+        // Permanent client errors (4xx except 429) will never succeed on
+        // retry — remove the entry instead of leaving it stuck forever.
+        if (res.status >= 400 && res.status < 500 && res.status !== 429) {
+          await removeQueuedSubmission(entry.id);
+        } else {
+          await markSubmissionAttempt(entry.id, text || `HTTP ${res.status}`);
+        }
         failed += 1;
         continue;
       }

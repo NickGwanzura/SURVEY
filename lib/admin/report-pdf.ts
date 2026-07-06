@@ -88,7 +88,7 @@ type ReportMeta = {
 
 function buildReportMeta(
   reportType: string,
-  data: Record<string, { label: any; count: number }[]>,
+  data: Record<string, { label: string | boolean; count: number }[]>,
 ): ReportMeta {
   const titles: Record<string, string> = {
     methodology: "Methodology & Readiness Report",
@@ -386,7 +386,7 @@ function shouldUsePieChart(rows: { label: string; percent: string }[]): boolean 
 
 export function generateReportPdf(
   reportType: string,
-  data: Record<string, { label: any; count: number }[]>,
+  data: Record<string, { label: string | boolean; count: number }[]>,
 ): Buffer {
   const meta = buildReportMeta(reportType, data);
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });

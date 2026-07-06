@@ -58,6 +58,13 @@
       "when": 1780732000000,
       "tag": "0007_add_registration_numbers",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1778904201146,
+      "tag": "0008_add_phone_unique_constraint",
+      "breakpoints": true
     }
   ]
 }

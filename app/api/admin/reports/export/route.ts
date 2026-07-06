@@ -11,7 +11,7 @@ import {
   convertToCsv
 } from "@/lib/admin/reports-data";
 
-const DATA_FETCHERS: Record<string, () => Promise<Record<string, { label: any; count: number }[]>>> = {
+const DATA_FETCHERS: Record<string, () => Promise<Record<string, { label: string | boolean; count: number }[]>>> = {
   methodology: getMethodologyData,
   "skills-gap": getSkillsGapData,
   "tools-needs": getToolsNeedsData,

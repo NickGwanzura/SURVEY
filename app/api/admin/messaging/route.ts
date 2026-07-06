@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
   const { subject, message, recipientType, filterStatus } = parsed.data;
 
   try {
-    let recipients: string[] = [];
+    const recipients: string[] = [];
 
     if (recipientType === "admins") {
       // Fetch all active admin users

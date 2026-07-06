@@ -11,6 +11,7 @@ import {
 import { db } from "@/lib/db";
 import { adminUsers } from "@/lib/schema";
 import { logSystemEvent } from "@/lib/admin/system-events";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -19,49 +20,12 @@ const loginSchema = z.object({
   password: z.string().min(1),
 });
 
-// ─── In-memory rate limiter ──────────────────────────────────────────────────
-// Note: in serverless environments each instance has its own map, so this is
-// defense-in-depth rather than a hard guarantee. For stricter enforcement add
-// an external store (Upstash Redis, etc.).
-
-const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
-const RATE_LIMIT_MAX_ATTEMPTS = 10;
-
-const attemptStore = new Map<string, { count: number; resetAt: number }>();
-
-function checkRateLimit(key: string): { allowed: boolean; retryAfter: number } {
-  const now = Date.now();
-  const entry = attemptStore.get(key);
-
-  if (!entry || now > entry.resetAt) {
-    attemptStore.set(key, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
-    return { allowed: true, retryAfter: 0 };
-  }
-
-  entry.count += 1;
-
-  if (entry.count > RATE_LIMIT_MAX_ATTEMPTS) {
-    const retryAfter = Math.ceil((entry.resetAt - now) / 1000);
-    return { allowed: false, retryAfter };
-  }
-
-  return { allowed: true, retryAfter: 0 };
-}
-
-// ─── IP helpers ──────────────────────────────────────────────────────────────
-
-function getClientIp(req: NextRequest): string | null {
-  const forwarded = req.headers.get("x-forwarded-for");
-  if (forwarded) return forwarded.split(",")[0].trim();
-  return req.headers.get("x-real-ip");
-}
-
 // ─── POST handler ────────────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
   // Rate-limit by IP
-  const ip = getClientIp(req) ?? "unknown";
-  const { allowed, retryAfter } = checkRateLimit(ip);
+  const ip = getClientIp(req);
+  const { allowed, retryAfter } = await checkRateLimit(`login:${ip}`);
 
   if (!allowed) {
     return NextResponse.json(

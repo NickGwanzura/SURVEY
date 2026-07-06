@@ -4,10 +4,27 @@ import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { techniciansSurvey } from "@/lib/schema";
 import { checkPhoneQuerySchema } from "@/lib/validation";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
 export async function GET(req: NextRequest) {
+  // Rate limit: 30 phone checks per IP per minute
+  const { allowed, retryAfter } = await checkRateLimit(
+    `survey-check-phone:${getClientIp(req)}`,
+    30,
+    60_000,
+  );
+  if (!allowed) {
+    return NextResponse.json(
+      { error: `Too many requests. Try again in ${retryAfter} seconds.` },
+      {
+        status: 429,
+        headers: { "Retry-After": String(retryAfter) },
+      },
+    );
+  }
+
   const phone = req.nextUrl.searchParams.get("phone");
   const parsed = checkPhoneQuerySchema.safeParse({ phone });
   if (!parsed.success) {

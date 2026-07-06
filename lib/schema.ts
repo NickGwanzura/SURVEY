@@ -267,7 +267,7 @@ export const techniciansSurvey = pgTable(
       .defaultNow(),
   },
   (table) => ({
-    phoneIdx: index("technicians_survey_phone_idx").on(table.phone),
+    phoneIdx: uniqueIndex("technicians_survey_phone_unique").on(table.phone),
     emailIdx: index("technicians_survey_email_idx").on(table.email),
     provinceIdx: index("technicians_survey_province_idx").on(table.province),
     mainWorkFocusIdx: index("technicians_survey_main_work_focus_idx")
@@ -355,7 +355,7 @@ export const retailersSurvey = pgTable(
       .defaultNow(),
   },
   (table) => ({
-    phoneIdx: index("retailers_survey_phone_idx").on(table.phone),
+    phoneIdx: uniqueIndex("retailers_survey_phone_unique").on(table.phone),
     emailIdx: index("retailers_survey_email_idx").on(table.email),
     provinceIdx: index("retailers_survey_province_idx").on(table.province),
     businessTypeIdx: index("retailers_survey_business_type_idx").on(
@@ -534,3 +534,20 @@ export const registrationNumberSequence = pgTable("registration_number_sequence"
 
 export type RegistrationNumberSequence = typeof registrationNumberSequence.$inferSelect;
 export type NewRegistrationNumberSequence = typeof registrationNumberSequence.$inferInsert;
+
+/**
+ * DB-backed rate limiter table.
+ * Stores per-key (IP + route) attempt counts that expire after the window.
+ * Shared across all serverless instances so rate limiting is effective at scale.
+ */
+export const rateLimitEntries = pgTable("rate_limit_entries", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  key: text("key").notNull(),
+  count: integer("count").notNull().default(1),
+  resetAt: timestamp("reset_at", { withTimezone: true }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+}, (table) => ({
+  keyIdx: index("rate_limit_entries_key_idx").on(table.key),
+}));

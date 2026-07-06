@@ -142,7 +142,7 @@ function pieChart(doc: jsPDF, rows: { label: string; count: number; percent: str
   doc.setFillColor(...WHITE); doc.circle(cx, cy, 1.5, "F");
 }
 
-function usePie(rows: { label: string; percent: string }[]): boolean {
+function shouldUsePie(rows: { label: string; percent: string }[]): boolean {
   return rows.length >= 2 && rows.length <= 7;
 }
 
@@ -168,7 +168,7 @@ function rtc(doc: jsPDF, title: string, rows: { label: string; count: number; pe
     const cr = rows.filter((r) => parseFloat(r.percent) > 0);
     if (cr.length > 0) {
       if (y > PH - 48) { addPage(doc); y = 30; }
-      if (usePie(cr)) {
+      if (shouldUsePie(cr)) {
         doc.setFontSize(8); doc.setFont("helvetica", "bold"); doc.setTextColor(...S500);
         doc.text("Distribution", M, y);
         pieChart(doc, cr, 42, y + 24, Math.min(20, cr.length * 3), 80, y + 5);

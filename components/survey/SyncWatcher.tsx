@@ -42,22 +42,12 @@ export function SyncWatcher() {
       }
     };
 
-    const pingServiceWorker = () => {
-      if (typeof navigator !== "undefined" && navigator.serviceWorker?.controller) {
-        navigator.serviceWorker.controller.postMessage({
-          type: "FLUSH_SURVEY_QUEUE",
-        });
-      }
-    };
-
     if (typeof navigator !== "undefined" && navigator.onLine) {
       tryFlush("load");
-      pingServiceWorker();
     }
 
     const onOnline = () => {
       tryFlush("online");
-      pingServiceWorker();
     };
     window.addEventListener("online", onOnline);
     return () => {

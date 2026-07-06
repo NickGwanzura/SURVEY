@@ -2,10 +2,27 @@ import { type NextRequest, NextResponse } from "next/server";
 
 import { createSignedPhotoUpload } from "@/lib/r2";
 import { photoUploadRequestSchema } from "@/lib/validation";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
+  // Rate limit: 10 upload URL requests per IP per minute
+  const { allowed, retryAfter } = await checkRateLimit(
+    `survey-upload-photo:${getClientIp(req)}`,
+    10,
+    60_000,
+  );
+  if (!allowed) {
+    return NextResponse.json(
+      { error: `Too many requests. Try again in ${retryAfter} seconds.` },
+      {
+        status: 429,
+        headers: { "Retry-After": String(retryAfter) },
+      },
+    );
+  }
+
   let body: unknown;
   try {
     body = await req.json();
@@ -22,7 +39,10 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const signed = await createSignedPhotoUpload(parsed.data.contentType);
+    const signed = await createSignedPhotoUpload(
+      parsed.data.contentType,
+      parsed.data.byteLength,
+    );
     return NextResponse.json(signed);
   } catch (err) {
     console.error("[POST /api/survey/upload-photo] Upload failed:", err);

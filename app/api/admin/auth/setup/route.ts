@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { adminUsers } from "@/lib/schema";
 import { hashPassword } from "@/lib/auth";
 import { verifyInviteToken } from "@/lib/admin/admin-invites-data";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 const setupSchema = z.object({
   token: z.string().min(1),
@@ -12,6 +13,21 @@ const setupSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
+  // Rate limit: 5 setup attempts per IP per 15 minutes
+  const { allowed, retryAfter } = await checkRateLimit(
+    `admin-setup:${getClientIp(request)}`,
+    5,
+  );
+  if (!allowed) {
+    return NextResponse.json(
+      { error: `Too many requests. Try again in ${retryAfter} seconds.` },
+      {
+        status: 429,
+        headers: { "Retry-After": String(retryAfter) },
+      },
+    );
+  }
+
   let body: unknown;
   try {
     body = await request.json();

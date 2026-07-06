@@ -59,7 +59,7 @@ export async function getAchievementGapsData() {
   return { energyInstalls, statuses };
 }
 
-export function convertToCsv(data: Record<string, { label: any; count: number }[]>): string {
+export function convertToCsv(data: Record<string, { label: string | boolean; count: number }[]>): string {
   const rows: string[] = ["Category,Label,Count"];
   
   for (const [category, items] of Object.entries(data)) {

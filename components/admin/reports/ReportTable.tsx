@@ -2,7 +2,7 @@ import React from "react";
 
 type ReportTableProps = {
   title: string;
-  data: { label: any; count: number }[];
+  data: { label: string | boolean; count: number }[];
 };
 
 export function ReportTable({ title, data }: ReportTableProps) {

@@ -18,7 +18,6 @@ import {
   NetworkOnly,
   StaleWhileRevalidate,
 } from "serwist";
-import { BackgroundSyncQueue } from "serwist";
 
 declare global {
   interface WorkerGlobalScope extends SerwistGlobalConfig {
@@ -30,10 +29,6 @@ declare const self: ServiceWorkerGlobalScope &
   SerwistGlobalConfig & {
     __SW_MANIFEST: (PrecacheEntry | string)[] | undefined;
   };
-
-const surveySubmitQueue = new BackgroundSyncQueue("survey-submit-queue", {
-  maxRetentionTime: 7 * 24 * 60, // 7 days
-});
 
 // Override default-cache entries that should never be cached, and keep the
 // rest. We add custom rules in front so they win route-matching.
@@ -48,19 +43,12 @@ const customRuntimeCaching = [
     handler: new NetworkOnly(),
   },
 
-  // ----- Survey submit: queue for retry when offline -----
+  // ----- Survey submit: network-only — offline retry is handled by the
+  //       app-level IndexedDB queue (lib/offline-sync.ts + SyncWatcher) -----
   {
     matcher: ({ url, request }: { url: URL; request: Request }) =>
       url.pathname === "/api/survey/submit" && request.method === "POST",
-    handler: new NetworkOnly({
-      plugins: [
-        {
-          fetchDidFail: async ({ request }) => {
-            await surveySubmitQueue.pushRequest({ request });
-          },
-        },
-      ],
-    }),
+    handler: new NetworkOnly(),
     method: "POST" as const,
   },
 
@@ -141,10 +129,5 @@ const serwist = new Serwist({
 
 serwist.addEventListeners();
 
-// Allow pages to ask the SW to flush the survey-submit queue immediately
-// (e.g. our SyncWatcher when it sees `online`).
-self.addEventListener("message", (event) => {
-  if (event.data?.type === "FLUSH_SURVEY_QUEUE") {
-    void surveySubmitQueue.replayRequests();
-  }
-});
+// Note: Offline sync is handled by the app-level IndexedDB queue
+// (lib/offline-sync.ts + SyncWatcher), not by the service worker.
