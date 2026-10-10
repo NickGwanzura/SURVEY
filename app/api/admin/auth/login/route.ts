@@ -11,7 +11,7 @@ import {
 import { db } from "@/lib/db";
 import { adminUsers } from "@/lib/schema";
 import { logSystemEvent } from "@/lib/admin/system-events";
-import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { checkRateLimit, getClientIp, rateLimitUnavailableResponse } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -25,14 +25,15 @@ const loginSchema = z.object({
 export async function POST(req: NextRequest) {
   // Rate-limit by IP
   const ip = getClientIp(req);
-  const { allowed, retryAfter } = await checkRateLimit(`login:${ip}`);
+  const limit = await checkRateLimit(`login:${ip}`);
+  if (limit.unavailable) return rateLimitUnavailableResponse();
 
-  if (!allowed) {
+  if (!limit.allowed) {
     return NextResponse.json(
-      { error: `Too many attempts. Try again in ${retryAfter} seconds.` },
+      { error: `Too many attempts. Try again in ${limit.retryAfter} seconds.` },
       {
         status: 429,
-        headers: { "Retry-After": String(retryAfter) },
+        headers: { "Retry-After": String(limit.retryAfter) },
       },
     );
   }

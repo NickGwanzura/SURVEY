@@ -6,23 +6,24 @@ import { sendSurveyCompletedEmail, notifyAdminsOfNewSubmission } from "@/lib/adm
 import { logSystemEvent } from "@/lib/admin/system-events";
 import { surveyEvents, techniciansSurvey } from "@/lib/schema";
 import { surveySubmissionSchema } from "@/lib/validation";
-import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { checkRateLimit, getClientIp, rateLimitUnavailableResponse } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
   try {
     // Rate limit: 5 submissions per IP per 15 minutes
-    const { allowed, retryAfter } = await checkRateLimit(
+    const limit = await checkRateLimit(
       `survey-submit:${getClientIp(req)}`,
       5,
     );
-    if (!allowed) {
+    if (limit.unavailable) return rateLimitUnavailableResponse();
+    if (!limit.allowed) {
       return NextResponse.json(
-        { error: `Too many requests. Try again in ${retryAfter} seconds.` },
+        { error: `Too many requests. Try again in ${limit.retryAfter} seconds.` },
         {
           status: 429,
-          headers: { "Retry-After": String(retryAfter) },
+          headers: { "Retry-After": String(limit.retryAfter) },
         },
       );
     }

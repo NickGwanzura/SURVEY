@@ -7,7 +7,7 @@ import { adminUsers } from "@/lib/schema";
 import { createResetToken } from "@/lib/admin/password-reset";
 import { sendPasswordResetEmail } from "@/lib/admin/email";
 import { logSystemEvent } from "@/lib/admin/system-events";
-import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { checkRateLimit, getClientIp, rateLimitUnavailableResponse } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -17,16 +17,17 @@ const forgotSchema = z.object({
 
 export async function POST(req: NextRequest) {
   // Rate limit: 3 forgot-password requests per IP per 15 minutes
-  const { allowed, retryAfter } = await checkRateLimit(
+  const limit = await checkRateLimit(
     `forgot-password:${getClientIp(req)}`,
     3,
   );
-  if (!allowed) {
+  if (limit.unavailable) return rateLimitUnavailableResponse();
+  if (!limit.allowed) {
     return NextResponse.json(
-      { error: `Too many requests. Try again in ${retryAfter} seconds.` },
+      { error: `Too many requests. Try again in ${limit.retryAfter} seconds.` },
       {
         status: 429,
-        headers: { "Retry-After": String(retryAfter) },
+        headers: { "Retry-After": String(limit.retryAfter) },
       },
     );
   }

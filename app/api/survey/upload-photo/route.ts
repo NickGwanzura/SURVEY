@@ -2,23 +2,24 @@ import { type NextRequest, NextResponse } from "next/server";
 
 import { createSignedPhotoUpload } from "@/lib/r2";
 import { photoUploadRequestSchema } from "@/lib/validation";
-import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { checkRateLimit, getClientIp, rateLimitUnavailableResponse } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
   // Rate limit: 10 upload URL requests per IP per minute
-  const { allowed, retryAfter } = await checkRateLimit(
+  const limit = await checkRateLimit(
     `survey-upload-photo:${getClientIp(req)}`,
     10,
     60_000,
   );
-  if (!allowed) {
+  if (limit.unavailable) return rateLimitUnavailableResponse();
+  if (!limit.allowed) {
     return NextResponse.json(
-      { error: `Too many requests. Try again in ${retryAfter} seconds.` },
+      { error: `Too many requests. Try again in ${limit.retryAfter} seconds.` },
       {
         status: 429,
-        headers: { "Retry-After": String(retryAfter) },
+        headers: { "Retry-After": String(limit.retryAfter) },
       },
     );
   }

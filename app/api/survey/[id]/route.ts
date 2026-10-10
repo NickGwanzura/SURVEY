@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { checkRateLimit, getClientIp, rateLimitUnavailableResponse } from "@/lib/rate-limit";
 
 import { computeDiff, logSurveyEdit } from "@/lib/audit";
 import { db } from "@/lib/db";
@@ -37,6 +37,7 @@ export async function PUT(request: NextRequest, { params }: RouteContext) {
 
   const ipLimit = await checkRateLimit(`survey-edit:ip:${getClientIp(request)}`, 20, 15 * 60_000);
   const recordLimit = await checkRateLimit(`survey-edit:record:${id}`, 10, 60 * 60_000);
+  if (ipLimit.unavailable || recordLimit.unavailable) return rateLimitUnavailableResponse();
   if (!ipLimit.allowed || !recordLimit.allowed) {
     const denied = !ipLimit.allowed ? ipLimit : recordLimit;
     return NextResponse.json(

@@ -37,7 +37,7 @@ function buildCSP(nonce: string): string {
     // that inject styles dynamically. Ideally we'd nonce these too.
     "style-src 'self' 'unsafe-inline' https://api.fontshare.com",
     "img-src 'self' data: https: blob:",
-    "connect-src 'self' https://*.tile.openstreetmap.org",
+    "connect-src 'self' https://api.fontshare.com https://*.tile.openstreetmap.org",
     "font-src 'self' data: https://api.fontshare.com",
     "object-src 'none'",
     "frame-src 'none'",

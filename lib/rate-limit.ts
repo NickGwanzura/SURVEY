@@ -1,6 +1,7 @@
 import "server-only";
 
 import { and, desc, eq, gt, lt, sql } from "drizzle-orm";
+import { NextResponse } from "next/server";
 
 import { db } from "@/lib/db";
 import { rateLimitEntries } from "@/lib/schema";
@@ -8,6 +9,7 @@ import { rateLimitEntries } from "@/lib/schema";
 export type RateLimitResult = {
   allowed: boolean;
   retryAfter: number;
+  unavailable?: boolean;
 };
 
 const WINDOW_MS = 15 * 60 * 1000; // 15 minutes
@@ -76,8 +78,16 @@ export async function checkRateLimit(
     });
   } catch {
     // Fail closed: an unavailable limiter must never silently disable a guard.
-    return { allowed: false, retryAfter: 60 };
+    return { allowed: false, retryAfter: 60, unavailable: true };
   }
+}
+
+/** Return an explicit service error when the shared rate-limit store is down. */
+export function rateLimitUnavailableResponse() {
+  return NextResponse.json(
+    { error: "Service temporarily unavailable. Please try again shortly." },
+    { status: 503, headers: { "Retry-After": "60" } },
+  );
 }
 
 /**

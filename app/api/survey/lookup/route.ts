@@ -6,7 +6,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { techniciansSurvey } from "@/lib/schema";
 import { ZIMBABWE_PHONE_REGEX } from "@/lib/validation";
-import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { checkRateLimit, getClientIp, rateLimitUnavailableResponse } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -52,6 +52,7 @@ export async function POST(req: NextRequest) {
   const { phone, referenceNumber } = parsed.data;
 
   const ipLimit = await checkRateLimit(`survey-lookup:ip:${getClientIp(req)}`, 10, 15 * 60_000);
+  if (ipLimit.unavailable) return rateLimitUnavailableResponse();
   if (!ipLimit.allowed) {
     return NextResponse.json(
       { error: "Too many lookup attempts. Please try again later." },
@@ -63,6 +64,7 @@ export async function POST(req: NextRequest) {
   if (referenceNumber.length === 8) {
     const phoneKey = createHash("sha256").update(phone).digest("hex");
     const phoneLimit = await checkRateLimit(`survey-lookup:legacy-phone:${phoneKey}`, 8, 24 * 60 * 60_000);
+    if (phoneLimit.unavailable) return rateLimitUnavailableResponse();
     if (!phoneLimit.allowed) {
       return NextResponse.json(
         { error: "Too many lookup attempts. Please try again later." },
