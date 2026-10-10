@@ -2,13 +2,14 @@ import { config as loadDotenv } from "dotenv";
 
 loadDotenv({ path: ".env.local" });
 
-import { neon } from "@neondatabase/serverless";
+import postgres from "postgres";
 
 async function main() {
   const url = process.env.DATABASE_URL_UNPOOLED ?? process.env.DATABASE_URL;
   if (!url) throw new Error("DATABASE_URL not set");
 
-  const sql = neon(url);
+  const sql = postgres(url, { max: 1 });
+  try {
 
   const tables = (await sql`
     SELECT table_name
@@ -48,6 +49,9 @@ async function main() {
   console.log("technicians_survey columns:", surveyCols.length);
   console.log("Indexes:", indexes.length);
   for (const i of indexes) console.log("  ", i.tablename, "->", i.indexname);
+  } finally {
+    await sql.end();
+  }
 }
 
 main().catch((err) => {
