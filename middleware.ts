@@ -79,7 +79,7 @@ export async function middleware(req: NextRequest) {
     const url = req.nextUrl.clone();
     // Dokploy forwards the app's internal port in Host. Build the public
     // canonical host without that port so it never leaks into redirects.
-    url.hostname = url.hostname.replace(/^www\./, "");
+    url.hostname = host.replace(/^www\./i, "").replace(/:\d+$/, "");
     if (process.env.NODE_ENV === "production") url.port = "";
     return NextResponse.redirect(url, { status: 301 });
   }
