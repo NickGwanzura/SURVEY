@@ -2,14 +2,14 @@ import "server-only";
 
 import { SignJWT, jwtVerify } from "jose";
 
-const INVITE_SECRET = (() => {
+function getInviteSecret(): Uint8Array {
   // Use a dedicated AUTH_INVITE_SECRET if set, otherwise fall back to AUTH_SECRET
   const raw = process.env.AUTH_INVITE_SECRET ?? process.env.AUTH_SECRET;
   if (!raw) {
     throw new Error("AUTH_SECRET (or AUTH_INVITE_SECRET) is not set. Add it to .env.local.");
   }
   return new TextEncoder().encode(raw);
-})();
+}
 
 const INVITE_JWT_ALG = "HS256";
 const INVITE_ISSUER = "zw-rac-survey";
@@ -36,7 +36,7 @@ export async function createInviteToken(
     .setAudience(INVITE_AUDIENCE)
     .setIssuedAt()
     .setExpirationTime(expiresAt)
-    .sign(INVITE_SECRET);
+    .sign(getInviteSecret());
 }
 
 /**
@@ -46,7 +46,7 @@ export async function verifyInviteToken(
   token: string,
 ): Promise<InvitePayload | null> {
   try {
-    const { payload } = await jwtVerify(token, INVITE_SECRET, {
+    const { payload } = await jwtVerify(token, getInviteSecret(), {
       issuer: INVITE_ISSUER,
       audience: INVITE_AUDIENCE,
     });

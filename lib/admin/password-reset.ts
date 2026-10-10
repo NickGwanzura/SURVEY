@@ -10,11 +10,11 @@ import { hashPassword } from "@/lib/auth";
 
 const RESET_EXPIRY_HOURS = 2;
 
-const encodedSecret = (() => {
+function getEncodedSecret(): Uint8Array {
   const raw = process.env.AUTH_SECRET;
   if (!raw) throw new Error("AUTH_SECRET is not set.");
   return new TextEncoder().encode(raw);
-})();
+}
 
 /** Create a reset token for the given admin user and return the signed JWT. */
 export async function createResetToken(
@@ -45,7 +45,7 @@ export async function createResetToken(
     .setAudience("password-reset")
     .setExpirationTime(Math.floor(expiresAt.getTime() / 1000))
     .setIssuedAt()
-    .sign(encodedSecret);
+    .sign(getEncodedSecret());
 
   return { token, expiresAt };
 }
@@ -55,7 +55,7 @@ export async function validateResetToken(
   token: string,
 ): Promise<{ adminUserId: string } | null> {
   try {
-    const { payload } = await jwtVerify(token, encodedSecret, {
+    const { payload } = await jwtVerify(token, getEncodedSecret(), {
       issuer: "zw-rac-survey",
       audience: "password-reset",
     });
@@ -98,7 +98,7 @@ export async function validateResetToken(
 /** Mark a reset token as used (after a successful password change). */
 export async function consumeResetToken(token: string): Promise<void> {
   try {
-    const { payload } = await jwtVerify(token, encodedSecret, {
+    const { payload } = await jwtVerify(token, getEncodedSecret(), {
       issuer: "zw-rac-survey",
       audience: "password-reset",
     });

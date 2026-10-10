@@ -8,13 +8,13 @@ import type { AdminUser } from "./schema";
 const COOKIE_NAME = process.env.AUTH_COOKIE_NAME ?? "zw_rac_admin";
 const SESSION_TTL_HOURS = Number(process.env.AUTH_SESSION_TTL_HOURS ?? "4");
 
-const encodedSecret = (() => {
+function getEncodedSecret(): Uint8Array {
   const raw = process.env.AUTH_SECRET;
   if (!raw) {
     throw new Error("AUTH_SECRET is not set. Add it to .env.local.");
   }
   return new TextEncoder().encode(raw);
-})();
+}
 
 const JWT_ALG = "HS256";
 const JWT_ISSUER = "zw-rac-survey";
@@ -48,14 +48,14 @@ export async function signSessionToken(payload: SessionPayload): Promise<string>
     .setSubject(payload.sub)
     .setIssuedAt()
     .setExpirationTime(expiresAt)
-    .sign(encodedSecret);
+    .sign(getEncodedSecret());
 }
 
 export async function verifySessionToken(
   token: string,
 ): Promise<SessionPayload | null> {
   try {
-    const { payload } = await jwtVerify(token, encodedSecret, {
+    const { payload } = await jwtVerify(token, getEncodedSecret(), {
       issuer: JWT_ISSUER,
       audience: JWT_AUDIENCE,
     });
