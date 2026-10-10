@@ -125,7 +125,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const referenceNumber = inserted.id.slice(0, 8).toUpperCase();
+    const referenceNumber = inserted.id.replaceAll("-", "").toUpperCase();
 
     // Log consent audit event asynchronously
     db.insert(surveyEvents)

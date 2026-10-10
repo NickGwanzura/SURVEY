@@ -5,8 +5,7 @@ import { and, eq, gt, isNull, lt } from "drizzle-orm";
 import { SignJWT, jwtVerify } from "jose";
 
 import { db } from "@/lib/db";
-import { adminUsers, passwordResetTokens } from "@/lib/schema";
-import { hashPassword } from "@/lib/auth";
+import { passwordResetTokens } from "@/lib/schema";
 
 const RESET_EXPIRY_HOURS = 2;
 

@@ -211,9 +211,10 @@ export default function PrivacyNoticePage() {
               Your personal data will not be sold or rented to third parties.
               Aggregated, anonymised data may be shared with UNEP for the
               purposes of national reporting under the Montreal Protocol. Your
-              name and professional details will only appear in the public
-              technician registry if you have explicitly consented to this in
-              the survey.
+              name, province, and reported certification status will appear in
+              the public technician registry only if you have explicitly
+              consented to this in the survey. Phone numbers, email addresses,
+              GPS coordinates, and survey responses are not published there.
             </p>
           </Section>
 

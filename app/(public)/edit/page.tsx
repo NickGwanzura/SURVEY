@@ -97,12 +97,13 @@ export default function EditLookupPage() {
               type="text"
               value={referenceNumber}
               onChange={(e) => setReferenceNumber(e.target.value)}
-              placeholder="e.g. A1B2C3D4"
+              placeholder="32-character code from your confirmation"
+              maxLength={36}
               className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm uppercase outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-200"
               required
             />
             <p className="mt-1 text-xs text-slate-500">
-              This is the 8-character code from your confirmation email.
+              Use the 32-character code in your confirmation. Older codes with 8 characters remain valid.
             </p>
           </div>
 

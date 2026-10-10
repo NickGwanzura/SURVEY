@@ -81,7 +81,7 @@ export default async function RetailerCompletePage({
               <span className="text-[11px] font-semibold uppercase tracking-widest text-emerald-700">
                 Reference number
               </span>
-              <span className="font-mono text-lg tracking-wider text-emerald-900">
+              <span className="max-w-full break-all font-mono text-sm tracking-wide text-emerald-900 sm:text-lg">
                 {reference}
               </span>
               <span className="text-xs text-emerald-700/80">

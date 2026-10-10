@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, eq, gt, lt, sql } from "drizzle-orm";
+import { and, desc, eq, gt, lt, sql } from "drizzle-orm";
 
 import { db } from "@/lib/db";
 import { rateLimitEntries } from "@/lib/schema";
@@ -16,8 +16,8 @@ const MAX_ATTEMPTS = 10;
 /**
  * DB-backed rate limiter.
  *
- * Uses the `rate_limit_entries` table so the limit is shared across all
- * serverless instances. Stale entries are cleaned up opportunistically.
+ * Uses a PostgreSQL transaction-level advisory lock so the limit is shared
+ * across instances and concurrent requests cannot lose increments.
  *
  * @param key — Unique identifier for the client (e.g. `login:<ip>`)
  * @param maxAttempts — Max allowed attempts in the window (default 10)
@@ -42,44 +42,41 @@ export async function checkRateLimit(
   }
 
   try {
-    // Upsert: try to find an existing entry for this key that hasn't expired
-    const [existing] = await db
-      .select()
-      .from(rateLimitEntries)
-      .where(
-        and(
-          eq(rateLimitEntries.key, key),
-          gt(rateLimitEntries.resetAt, now),
-        ),
-      )
-      .limit(1);
+    return await db.transaction(async (tx) => {
+      await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext(${key}))`);
 
-    if (!existing) {
-      // Insert a fresh entry
-      const resetAt = new Date(now.getTime() + windowMs);
-      await db.insert(rateLimitEntries).values({ key, count: 1, resetAt });
+      const [existing] = await tx
+        .select({ id: rateLimitEntries.id, count: rateLimitEntries.count, resetAt: rateLimitEntries.resetAt })
+        .from(rateLimitEntries)
+        .where(and(eq(rateLimitEntries.key, key), gt(rateLimitEntries.resetAt, now)))
+        .orderBy(desc(rateLimitEntries.resetAt))
+        .limit(1);
+
+      if (!existing) {
+        await tx.delete(rateLimitEntries).where(eq(rateLimitEntries.key, key));
+        await tx.insert(rateLimitEntries).values({
+          key,
+          count: 1,
+          resetAt: new Date(now.getTime() + windowMs),
+        });
+        return { allowed: true, retryAfter: 0 };
+      }
+
+      if (existing.count >= maxAttempts) {
+        return {
+          allowed: false,
+          retryAfter: Math.max(1, Math.ceil((existing.resetAt.getTime() - now.getTime()) / 1000)),
+        };
+      }
+
+      await tx.update(rateLimitEntries)
+        .set({ count: existing.count + 1, resetAt: existing.resetAt })
+        .where(eq(rateLimitEntries.key, key));
       return { allowed: true, retryAfter: 0 };
-    }
-
-    if (existing.count >= maxAttempts) {
-      const retryAfter = Math.ceil(
-        (existing.resetAt.getTime() - now.getTime()) / 1000,
-      );
-      return { allowed: false, retryAfter };
-    }
-
-    // Increment count
-    await db
-      .update(rateLimitEntries)
-      .set({
-        count: sql`${rateLimitEntries.count} + 1`,
-      })
-      .where(eq(rateLimitEntries.id, existing.id));
-
-    return { allowed: true, retryAfter: 0 };
+    });
   } catch {
-    // If the DB call fails, allow the request through rather than blocking it
-    return { allowed: true, retryAfter: 0 };
+    // Fail closed: an unavailable limiter must never silently disable a guard.
+    return { allowed: false, retryAfter: 60 };
   }
 }
 

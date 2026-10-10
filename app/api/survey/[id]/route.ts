@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 import { computeDiff, logSurveyEdit } from "@/lib/audit";
 import { db } from "@/lib/db";
@@ -8,6 +9,16 @@ import { techniciansSurvey } from "@/lib/schema";
 import { surveyUpdateSchema } from "@/lib/validation";
 
 const idSchema = z.string().uuid();
+const PRIVATE_APPLICANT_FIELDS = new Set([
+  "ipAddress", "userAgent", "dataConsentIpAddress", "dataConsentUserAgent",
+  "dataConsentAcceptedAt", "dataConsentAccepted", "notes",
+]);
+
+function applicantSafeRecord<T extends object>(record: T): Partial<T> {
+  return Object.fromEntries(
+    Object.entries(record).filter(([key]) => !PRIVATE_APPLICANT_FIELDS.has(key)),
+  ) as Partial<T>;
+}
 
 const updateBodySchema = z.intersection(
   surveyUpdateSchema,
@@ -22,6 +33,16 @@ export async function PUT(request: NextRequest, { params }: RouteContext) {
   const { id } = await params;
   if (!idSchema.safeParse(id).success) {
     return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+  }
+
+  const ipLimit = await checkRateLimit(`survey-edit:ip:${getClientIp(request)}`, 20, 15 * 60_000);
+  const recordLimit = await checkRateLimit(`survey-edit:record:${id}`, 10, 60 * 60_000);
+  if (!ipLimit.allowed || !recordLimit.allowed) {
+    const denied = !ipLimit.allowed ? ipLimit : recordLimit;
+    return NextResponse.json(
+      { error: "Too many edit attempts. Please try again later." },
+      { status: 429, headers: { "Retry-After": String(denied.retryAfter) } },
+    );
   }
 
   let body: unknown;
@@ -145,7 +166,7 @@ export async function PUT(request: NextRequest, { params }: RouteContext) {
 
     await logSurveyEdit(id, { type: "applicant", display: data.verificationPhone }, changes);
 
-    return NextResponse.json(updated);
+    return NextResponse.json(applicantSafeRecord(updated));
   } catch (err) {
     console.error("[PUT /api/survey/[id]]", err);
     return NextResponse.json(

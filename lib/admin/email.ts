@@ -138,7 +138,7 @@ export function surveyCompletedEmailHtml(
             <tr>
               <td style="padding:14px 24px;text-align:center;">
                 <p style="margin:0;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:${BRAND_700};">Reference Number</p>
-                <p style="margin:4px 0 0;font-family:'SF Mono','Fira Code',monospace;font-size:20px;font-weight:600;color:${BRAND_600};letter-spacing:1px;">${referenceNumber}</p>
+                <p style="margin:4px 0 0;font-family:'SF Mono','Fira Code',monospace;font-size:16px;font-weight:600;color:${BRAND_600};letter-spacing:1px;word-break:break-all;">${referenceNumber}</p>
                 <p style="margin:4px 0 0;font-size:11px;color:${BRAND_700};opacity:0.8;">Keep this for your records.</p>
               </td>
             </tr>
