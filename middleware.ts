@@ -77,7 +77,10 @@ export async function middleware(req: NextRequest) {
   const host = req.headers.get("host") ?? "";
   if (host.startsWith("www.")) {
     const url = req.nextUrl.clone();
-    url.host = host.replace(/^www\./, "");
+    // Dokploy forwards the app's internal port in Host. Build the public
+    // canonical host without that port so it never leaks into redirects.
+    url.hostname = url.hostname.replace(/^www\./, "");
+    if (process.env.NODE_ENV === "production") url.port = "";
     return NextResponse.redirect(url, { status: 301 });
   }
 
