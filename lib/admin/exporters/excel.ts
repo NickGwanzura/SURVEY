@@ -1,4 +1,4 @@
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 
 import type { TechnicianSurvey } from "@/lib/schema";
 import { cellValue, selectColumns, stableHash, type ExportOptions, type ExportResult } from "./types";
@@ -25,20 +25,20 @@ export async function excelExporter(
     }),
   );
 
-  const aoa = [headers, ...dataRows];
-  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet("Technicians");
+  worksheet.addRow(headers);
+  for (const row of dataRows) worksheet.addRow(row);
 
-  // Reasonable column widths
-  const colWidths = headers.map((h) => {
-    const w = Math.max(h.length + 2, 12);
-    return { wch: Math.min(w, 40) };
+  // Keep the exported columns readable without letting long values dominate.
+  headers.forEach((header, index) => {
+    worksheet.getColumn(index + 1).width = Math.min(
+      Math.max(header.length + 2, 12),
+      40,
+    );
   });
-  ws["!cols"] = colWidths;
 
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Technicians");
-
-  const xlsxBuffer = XLSX.write(wb, { type: "buffer", bookType: "xlsx" }) as Buffer;
+  const xlsxBuffer = Buffer.from(await workbook.xlsx.writeBuffer());
 
   return {
     buffer: xlsxBuffer,

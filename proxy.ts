@@ -66,7 +66,7 @@ function applySecurityHeaders(response: NextResponse, nonce: string): NextRespon
   return response;
 }
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Generate a cryptographically random nonce for this request.
